@@ -1,1 +1,13 @@
-az update
+#!/bin/bash
+set -e
+
+# Azure Linux (CBL-Mariner) uses tdnf
+if command -v tdnf >/dev/null 2>&1; then
+    sudo tdnf update -y
+    sudo tdnf install -y git
+else
+    echo "tdnf not found. Skipping Azure Linux package updates."
+fi
+
+# Update Azure CLI
+az upgrade --yes
