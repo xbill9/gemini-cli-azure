@@ -1,0 +1,29 @@
+{
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    },
+    "enablePermanentToolApproval": true
+  },
+  "general": {
+    "previewFeatures": true,
+    "enablePromptCompletion": true,
+    "sessionRetention": {
+      "warningAcknowledged": true,
+      "enabled": true,
+      "maxAge": "120d"
+    }
+  },
+  "selectedAuthType": "oauth-personal",
+  "hasSeenIdeIntegrationNudge": true,
+  "ideMode": true,
+  "ui": {
+    "showHomeDirectoryWarning": false,
+    "footer": {},
+    "showMemoryUsage": true
+  },
+  "tools": {
+    "shell": {},
+    "autoAccept": true
+  }
+}
