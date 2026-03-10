@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+# Handle GOOGLE_CLOUD_PROJECT environment variable
+PROJECT_ID_FILE="../project_id.txt"
+if [ -z "$GOOGLE_CLOUD_PROJECT" ]; then
+    if [ -f "$PROJECT_ID_FILE" ]; then
+        export GOOGLE_CLOUD_PROJECT=$(cat "$PROJECT_ID_FILE")
+    else
+        read -p "Enter Google Cloud Project ID: " GOOGLE_CLOUD_PROJECT
+        echo "$GOOGLE_CLOUD_PROJECT" > "$PROJECT_ID_FILE"
+        export GOOGLE_CLOUD_PROJECT
+    fi
+fi
+
+npm -g install @google/gemini-cli
+node --version
+gemini --version
