@@ -10,6 +10,8 @@ https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
 https://learn.microsoft.com/en-us/cli/azure/
 https://learn.microsoft.com/en-us/cli/azure/reference
 
+https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt
+
 ## Azure CLI Tools
 
 You can use the Azure CLI to manage resources across Azure Storage, Virtual Machines, and other services.
