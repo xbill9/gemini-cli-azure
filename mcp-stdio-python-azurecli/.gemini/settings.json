@@ -1,9 +1,9 @@
 {
   "mcpServers": {
-    "aws-stdio-python": {
+    "azurecli-stdio-python": {
       "command": "python",
       "args": [
-        "$HOME/gemini-cli-aws/mcp-stdio-python-aws/main.py"
+        "$HOME/gemini-cli-azure/mcp-stdio-python-azurecli/main.py"
       ]
     }
   }
