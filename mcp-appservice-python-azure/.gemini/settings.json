@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "azure-appservice-python": {
+      "httpUrl": "https://mcp-app-penguin.azurewebsites.net/mcp"
+    }
+  }
+}
