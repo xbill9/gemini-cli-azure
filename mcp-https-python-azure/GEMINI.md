@@ -16,9 +16,9 @@ This is a **Python-based Model Context Protocol (MCP) server** using the `FastMC
 
 ## Project Structure
 
-*   `main.py`: The entry point of the application. Initializes the `FastMCP` server ("hello-world-server") and defines tools.
-*   `requirements.txt`: Python dependencies.
-*   `Makefile`: Development shortcuts (test, lint, clean). *Note: Some targets in the Makefile may reference legacy paths and might need adjustment.*
+* `main.py`: The entry point of the application. Initializes the `FastMCP` server ("hello-world-server") and defines tools.
+* `requirements.txt`: Python dependencies.
+* `Makefile`: Development shortcuts (test, lint, clean, deploy).
 
 ## Development Setup
 
@@ -35,7 +35,7 @@ This is a **Python-based Model Context Protocol (MCP) server** using the `FastMC
 
 ## Running the Server
 
-The server is configured to run using the `HTTP` transport on `http://localhost:8080`.
+The server is configured to run using the `HTTP` transport on `http://0.0.0.0:8080`.
 
 ```bash
 python main.py
@@ -43,12 +43,16 @@ python main.py
 
 *Note: This is an MCP server running over HTTP and should be started before an MCP client attempts to connect to it.*
 
+## Deployment
+
+The project includes a `Dockerfile` for containerization and a `cloudbuild.yaml` for automated deployment to Google Cloud Run.
+
+*   **Build Docker image:** `make docker-build`
+*   **Deploy to Cloud Run:** `make deploy`
+
 ## Python MCP Developer Resources
 
 *   **MCP Python SDK (GitHub):** [https://github.com/mcp-protocol/mcp-python-sdk](https://github.com/mcp-protocol/mcp-python-sdk)
 *   **FastMCP Documentation:** [https://gofastmcp.com/](https://gofastmcp.com/)
 *   **`mcp` package on PyPI:** [https://pypi.org/project/mcp/](https://pypi.org/project/mcp/)
 
-## Legacy/mismatched files
-*   `Dockerfile`: Currently configured for a Node.js environment. Needs update for Python.
-*   `cloudbuild.yaml`: Currently configured for Node.js/npm builds. Needs update for Python.

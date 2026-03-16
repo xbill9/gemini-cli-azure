@@ -16,7 +16,7 @@ This project provides a basic MCP server named `hello-world-server` that exposes
 1.  **Clone the repository:**
     ```bash
     git clone <repository-url>
-    cd mcp-stdio-python
+    cd mcp-https-python-azure
     ```
 
 2.  **Set up a virtual environment (recommended):**
@@ -40,7 +40,14 @@ To run the server manually:
 ```bash
 python main.py
 ```
-The server will start on `http://localhost:5000` by default.
+The server will start on `http://0.0.0.0:8080` by default.
+
+### Health Check
+
+The server provides a standard HTTP health check endpoint:
+- **URL:** `http://localhost:8080/health`
+- **Method:** `GET`
+- **Response:** `{"status": "healthy", "service": "mcp-server"}`
 
 ### Configuration for MCP Clients
 
@@ -50,7 +57,7 @@ If you are adding this to an MCP client config (e.g., `claude_desktop_config.jso
 {
   "mcpServers": {
     "python-hello-world": {
-      "url": "http://localhost:5000"
+      "url": "http://localhost:8080"
     }
   }
 }
@@ -61,7 +68,7 @@ If you are adding this to an MCP client config (e.g., `claude_desktop_config.jso
 ## Tools
 
 ### `greet`
-- **Description:** Get a greeting from the local server.
+- **Description:** Get a greeting from the local HTTP server.
 - **Parameters:**
     - `param` (string): The text or name to echo back.
 - **Returns:** The string passed in `param`.
@@ -76,10 +83,14 @@ The project includes a `Makefile` to simplify common development tasks.
 - **Lint code:** `make lint` (requires `flake8`)
 - **Format code:** `make format` (requires `black`)
 - **Clean artifacts:** `make clean`
+- **Build Docker image:** `make docker-build`
+- **Deploy to Cloud Run:** `make deploy`
 
 ## Project Structure
 
 - `main.py`: Entry point using `FastMCP` to define the server and tools.
 - `requirements.txt`: Python dependencies.
 - `Makefile`: Commands for build, test, and maintenance.
+- `Dockerfile`: Container configuration for deployment.
+- `cloudbuild.yaml`: Google Cloud Build configuration.
 - `test_logging.py`: Unit tests for logging verification.
