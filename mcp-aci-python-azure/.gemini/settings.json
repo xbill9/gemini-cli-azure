@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "azure-aci-python": {
+      "httpUrl": "http://mcp-container-penguin.westus2.azurecontainer.io:8080/mcp"
+    }
+  }
+}
