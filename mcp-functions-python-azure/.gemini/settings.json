@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "azure-functions-python": {
+      "httpUrl": "https://mcp-func-penguin.azurewebsites.net/mcp"
+    }
+  }
+}

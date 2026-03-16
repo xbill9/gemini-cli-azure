@@ -1,0 +1,5 @@
+fastmcp
+pydantic
+python-json-logger
+azure-functions
+flake8
