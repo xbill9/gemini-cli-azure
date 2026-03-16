@@ -7,12 +7,12 @@ all: install test lint type-check
 # Target to install dependencies
 install:
 	@echo "Installing dependencies..."
-	@pip install -r requirements.txt
-	@pip install -r requirements-dev.txt
+	@pip install --user -r requirements.txt
+	@pip install --user -r requirements-dev.txt
 
 release:
 	@echo "Installing dependencies..."
-	@pip install -r requirements.txt
+	@pip install --user -r requirements.txt
 
 # Target to run the application
 run:
