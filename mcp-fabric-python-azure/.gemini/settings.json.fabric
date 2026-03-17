@@ -1,0 +1,7 @@
+ {
+    "mcpServers": {
+    "fabric-python-azure": {
+      "httpUrl": "https://mcp-fabric-server.mangorock-a40878f0.westus2.azurecontainerapps.io/mcp"
+    }
+  }
+}
