@@ -1,0 +1,4 @@
+#!/bin/bash
+EXTERNAL_IP=$(curl -s -4 ifconfig.me)
+echo "Access the ADK Builder at: http://${EXTERNAL_IP}:8080/dev-ui/?app=Agent1&mode=builder"
+adk $*
