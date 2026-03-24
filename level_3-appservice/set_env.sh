@@ -30,6 +30,8 @@ GOOGLE_API_KEY=$GOOGLE_API_KEY
 GEMINI_API_KEY=$GOOGLE_API_KEY
 GEMINI_KEY=$GOOGLE_API_KEY
 MODEL_ID="gemini-2.5-flash-native-audio-preview-12-2025"
+APP_NAME="biometric-scout-app"
+RESOURCE_GROUP="biometric-scout-rg"
 EOF
 
 source .env

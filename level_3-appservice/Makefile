@@ -24,9 +24,9 @@ deploy-azure:
 	./deploy-azure.sh
 
 azure-status:
-	@az webapp show --name webapp-biometric-scout --resource-group rg-biometric-scout --query "state" -o table
+	@az webapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "state" -o table
 
 endpoint:
-	@az webapp show --name webapp-biometric-scout --resource-group rg-biometric-scout --query "defaultHostName" -o tsv
+	@az webapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "defaultHostName" -o tsv
 
 
