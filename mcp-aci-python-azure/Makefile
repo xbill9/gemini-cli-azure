@@ -12,7 +12,7 @@ IMAGE_TAG ?= latest
 ACR_LOGIN_SERVER := $(AZ_ACR_NAME).azurecr.io
 FULL_IMAGE_NAME := $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)
 
-.PHONY: all install run build test lint format type-check status git-status az-status endpoint pull push clean deploy docker-build az-login acr-create acr-login push-acr az-deploy az-logs az-destroy
+.PHONY: all install run build test lint format type-check status git-status az-status endpoint pull push clean deploy docker-build az-login acr-create acr-login push-acr az-deploy az-logs az-destroy clean-azure
 
 all: install run
 
@@ -116,6 +116,9 @@ az-destroy:
 	@az acr delete --name $(AZ_ACR_NAME) --resource-group $(AZ_RESOURCE_GROUP) --yes 2>/dev/null || echo "ACR $(AZ_ACR_NAME) not found."
 	@echo "Deleting Resource Group $(AZ_RESOURCE_GROUP)..."
 	@az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait 2>/dev/null || echo "Resource Group $(AZ_RESOURCE_GROUP) not found."
+
+# Alias for az-destroy
+clean-azure: az-destroy
 
 .PHONY: clean
 clean:
