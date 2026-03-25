@@ -6,7 +6,7 @@ AZ_RESOURCE_GROUP ?= mcp-rg-eastus
 AZ_STORAGE_ACCOUNT_NAME ?= mcpstg$(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)$(shell date +%s | tail -c 5)
 AZ_FUNCTION_APP_NAME ?= mcp-func-$(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
 
-.PHONY: all install run test lint status git-status az-status endpoint pull push clean deploy az-deploy az-logs az-login az-setup
+.PHONY: all install run test lint status git-status az-status endpoint pull push clean deploy az-deploy az-logs az-login az-setup az-destroy
 
 all: install run
 
@@ -94,6 +94,12 @@ az-deploy: az-setup
 az-logs:
 	@echo "Fetching logs for $(AZ_FUNCTION_APP_NAME)..."
 	@az functionapp logs tail --name $(AZ_FUNCTION_APP_NAME) --resource-group $(AZ_RESOURCE_GROUP)
+
+# Destroy Azure Resources
+az-destroy:
+	@echo "Deleting Resource Group $(AZ_RESOURCE_GROUP)..."
+	@az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait
+	@echo "Resource Group deletion initiated in the background."
 
 .PHONY: clean
 clean:

@@ -18,7 +18,7 @@ GEMINI_API_KEY := $(shell cat ${HOME}/gemini.key 2>/dev/null || echo "")
 ACR_LOGIN_SERVER := $(AZ_ACR_NAME).azurecr.io
 FULL_IMAGE_NAME := $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)
 
-.PHONY: all clean test deploy run endpoint status az-status az-logs docker-build az-login acr-create acr-login push-acr az-deploy deploy-azure
+.PHONY: all clean test deploy run endpoint status az-status az-logs docker-build az-login acr-create acr-login push-acr az-deploy deploy-azure az-destroy
 
 all: run
 
@@ -105,3 +105,8 @@ az-logs:
 endpoint:
 	@echo "--- Azure Endpoint ---"
 	@az webapp show --name $(AZ_APP_SERVICE_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query "defaultHostName" --output tsv 2>/dev/null || echo "N/A"
+
+az-destroy:
+	@echo "Destroying Azure Resource Group $(AZ_RESOURCE_GROUP)..."
+	az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait
+	@echo "Resource Group deletion initiated. This may take a few minutes."

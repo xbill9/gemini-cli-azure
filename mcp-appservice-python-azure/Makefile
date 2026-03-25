@@ -13,7 +13,7 @@ IMAGE_TAG ?= latest
 ACR_LOGIN_SERVER := $(AZ_ACR_NAME).azurecr.io
 FULL_IMAGE_NAME := $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)
 
-.PHONY: all install run build test lint format type-check status git-status az-status endpoint pull push clean deploy docker-build az-login acr-create acr-login push-acr az-deploy az-logs
+.PHONY: all install run build test lint format type-check status git-status az-status endpoint pull push clean deploy docker-build az-login acr-create acr-login push-acr az-deploy az-logs az-destroy
 
 all: install run
 
@@ -100,6 +100,12 @@ az-deploy: push-acr
 az-logs:
 	@echo "Fetching logs for $(AZ_APP_SERVICE_NAME)..."
 	@az webapp log tail --name $(AZ_APP_SERVICE_NAME) --resource-group $(AZ_RESOURCE_GROUP)
+
+az-destroy:
+	@echo "Destroying Azure resources in $(AZ_RESOURCE_GROUP)..."
+	@echo "This will delete all resources within this resource group."
+	az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait
+	@echo "Resource group deletion started (non-blocking). It may take several minutes to complete."
 
 .PHONY: clean
 clean:

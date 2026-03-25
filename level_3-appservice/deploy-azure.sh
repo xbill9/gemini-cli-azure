@@ -3,7 +3,7 @@
 SERVICE_NAME="biometric-scout-service"
 IMAGE_NAME="biometric-scout-image"
 RESOURCE_GROUP="biometric-scout-rg"
-LOCATION="westus2"
+LOCATION="canadaeast"
 PLAN_NAME="biometric-scout-plan"
 APP_NAME="biometric-scout-app"
 ACR_NAME="biometricacrcomglitn"
@@ -71,7 +71,7 @@ az webapp config appsettings set \
     --resource-group ${RESOURCE_GROUP} \
     --settings \
         GOOGLE_CLOUD_PROJECT="${PROJECT_ID}" \
-        GOOGLE_CLOUD_LOCATION="us-central1" \
+        GOOGLE_CLOUD_LOCATION="us-east1" \
         GOOGLE_GENAI_USE_VERTEXAI="False" \
         VERTEX_AI="FALSE" \
         VERTEX="no" \

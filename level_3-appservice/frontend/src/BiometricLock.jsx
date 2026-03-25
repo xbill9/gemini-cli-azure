@@ -56,13 +56,13 @@ export default function BiometricLock() {
                         let labsCompleted = 0;
                         if (updatedData.level_1_complete) labsCompleted++;
                         if (updatedData.level_2_complete) labsCompleted++;
-                        if (updatedData.level_3_azure_appservice_complete) labsCompleted++;
+                        if (updatedData.level_3_complete) labsCompleted++;
                         if (updatedData.level_4_complete) labsCompleted++;
                         if (updatedData.level_5_complete) labsCompleted++;
 
                         const completion_percentage = labsCompleted * 20;
                         const patchPayload = {
-                            level_3_azure_appservice_complete: true,
+                            level_3_complete: true,
                             completion_percentage: completion_percentage
                         };
 

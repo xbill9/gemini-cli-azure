@@ -25,3 +25,6 @@ adkui-lightsail/.aws_creds
 adkui-fargate/.aws_creds
 level_3-lightsail/.requirements_installed
 level_3-fargate/task-definition.json
+
+.adk
+__pycache__

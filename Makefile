@@ -1,4 +1,6 @@
-SUBDIRS := level_3 \
+SUBDIRS := adkui-appservice \
+	level_3-appservice \
+	mcp-aca-python-azure \
 	mcp-aci-python-azure \
 	mcp-appservice-python-azure \
 	mcp-fabric-python-azure \
@@ -7,7 +9,7 @@ SUBDIRS := level_3 \
 	mcp-stdio-python-azure \
 	mcp-stdio-python-azurecli
 
-.PHONY: list clean release $(addprefix clean-,$(SUBDIRS)) $(addprefix release-,$(SUBDIRS))
+.PHONY: list clean release az-destroy $(addprefix clean-,$(SUBDIRS)) $(addprefix release-,$(SUBDIRS)) $(addprefix az-destroy-,$(SUBDIRS))
 
 list:
 	@echo "Subdirectories:"
@@ -18,6 +20,8 @@ list:
 clean: $(addprefix clean-,$(SUBDIRS))
 
 release: $(addprefix release-,$(SUBDIRS))
+
+az-destroy: $(addprefix az-destroy-,$(SUBDIRS))
 
 define clean_task
 clean-$(1):
@@ -59,5 +63,17 @@ release-$(1):
 	fi
 endef
 
+define az_destroy_task
+az-destroy-$(1):
+	@echo "----------------------------------------------------------------"
+	@echo "Destroying Azure resources in $(1)..."
+	@if [ -f "$(1)/Makefile" ]; then \
+		grep -q "az-destroy:" "$(1)/Makefile" && $(MAKE) -C $(1) az-destroy || echo "az-destroy target not found in $(1)/Makefile, skipping."; \
+	else \
+		echo "No Makefile found in $(1). Skipping."; \
+	fi
+endef
+
 $(foreach dir,$(SUBDIRS),$(eval $(call clean_task,$(dir))))
 $(foreach dir,$(SUBDIRS),$(eval $(call release_task,$(dir))))
+$(foreach dir,$(SUBDIRS),$(eval $(call az_destroy_task,$(dir))))

@@ -1,6 +1,6 @@
 # Makefile for ADK Comic Pipeline
 
-.PHONY: clean test deploy run endpoint
+.PHONY: clean test deploy run endpoint az-destroy
 
 clean:
 	@echo "Cleaning up generated images and temporary files..."
@@ -25,6 +25,11 @@ deploy-azure:
 
 azure-status:
 	@az webapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "state" -o table
+
+az-destroy:
+	@echo "Destroying resource group: biometric-scout-rg..."
+	@az group delete --name biometric-scout-rg --yes --no-wait
+	@echo "Deletion command sent successfully."
 
 endpoint:
 	@az webapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "defaultHostName" -o tsv

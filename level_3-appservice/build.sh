@@ -48,7 +48,7 @@ CMD ["python", "main.py"]
 EOF
 
 export PROJECT_ID=$(cat ~/project_id.txt)
-export REGION=us-central1
+export REGION=us-east1
 export SERVICE_NAME=biometric-scout
 export IMAGE_PATH=gcr.io/${PROJECT_ID}/${SERVICE_NAME}
 cd $HOME/gemini-cli-azure/level_3-appservice

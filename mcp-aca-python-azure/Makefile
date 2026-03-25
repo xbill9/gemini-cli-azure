@@ -132,6 +132,12 @@ az-logs:
 	@echo "Fetching logs for $(AZ_CONTAINER_APP_NAME)..."
 	@az containerapp logs show --name $(AZ_CONTAINER_APP_NAME) --resource-group $(AZ_RESOURCE_GROUP)
 
+# Target to delete all Azure resources by deleting the resource group
+az-destroy:
+	@echo "Deleting Resource Group $(AZ_RESOURCE_GROUP) and all associated resources..."
+	@az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait
+	@echo "Deletion of $(AZ_RESOURCE_GROUP) initiated in the background."
+
 .PHONY: clean
 clean:
 	@echo "Cleaning up..."

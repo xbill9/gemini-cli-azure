@@ -26,7 +26,7 @@ https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-mcp?p
 * `host.json`: Azure Functions host configuration.
 * `local.settings.json`: Local settings for Azure Functions Core Tools.
 * `requirements.txt`: Python dependencies.
-* `Makefile`: Development shortcuts (test, lint, clean, deploy, status).
+* `Makefile`: Development shortcuts (test, lint, clean, deploy, status, az-destroy).
 * `Dockerfile`: Container configuration (optional, not used for main deployment).
 
 ## Development Setup
@@ -76,6 +76,8 @@ The project is configured for deployment to **Azure Functions** using Zip deploy
 2.  **View Logs:** `make az-logs`
 3.  **Check Status:** `make status`
 4.  **Get Endpoint:** `make endpoint`
+5.  **Cleanup Resources:** `make az-destroy`
+    - This command deletes the entire Resource Group and all associated resources.
 
 ## Python MCP Developer Resources
 

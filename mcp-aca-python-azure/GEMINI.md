@@ -66,6 +66,7 @@ The project is configured for deployment to **Azure Container Apps (ACA)** using
 2.  **View Logs:** `make az-logs`
 3.  **Check Status:** `make status`
 4.  **Get Endpoint:** `make endpoint`
+5.  **Destroy Resources:** `make az-destroy` (Deletes the resource group)
 
 ## Python MCP Developer Resources
 
