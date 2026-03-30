@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: biometric-scout-app
+  labels:
+    app: biometric-scout-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: biometric-scout-app
+  template:
+    metadata:
+      labels:
+        app: biometric-scout-app
+    spec:
+      containers:
+      - name: biometric-scout-app
+        image: IMAGE_PLACEHOLDER
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "PROJECT_ID_PLACEHOLDER"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "us-east1"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "False"
+        - name: VERTEX_AI
+          value: "FALSE"
+        - name: VERTEX
+          value: "no"
+        - name: GOOGLE_API_KEY
+          value: "GEMINI_API_KEY_PLACEHOLDER"
+        - name: MODEL_ID
+          value: "gemini-2.0-flash-exp"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: biometric-scout-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: biometric-scout-app
