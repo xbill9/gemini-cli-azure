@@ -1,7 +1,14 @@
-SUBDIRS := adkui-appservice \
+SUBDIRS := adkui-aca \
+	adkui-aci \
+	adkui-aks \
+	adkui-appservice \
+	level_3-aca \
+	level_3-aci \
+	level_3-aks \
 	level_3-appservice \
 	mcp-aca-python-azure \
 	mcp-aci-python-azure \
+	mcp-aks-python-azure \
 	mcp-appservice-python-azure \
 	mcp-fabric-python-azure \
 	mcp-functions-python-azure \

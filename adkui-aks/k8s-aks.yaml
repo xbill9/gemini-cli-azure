@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adk-app
+  labels:
+    app: adk-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adk-app
+  template:
+    metadata:
+      labels:
+        app: adk-app
+    spec:
+      containers:
+      - name: adk-app
+        image: ${ACR_IMAGE}
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "${PROJECT_ID}"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "${GOOGLE_CLOUD_LOCATION}"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "False"
+        - name: VERTEX_AI
+          value: "FALSE"
+        - name: VERTEX
+          value: "no"
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: adk-secrets
+              key: GOOGLE_API_KEY
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: adk-secrets
+              key: GEMINI_API_KEY
+        - name: MODEL_ID
+          value: "gemini-2.5-flash-native-audio-preview-12-2025"
+        - name: ADK_DISABLE_LOCAL_STORAGE
+          value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adk-service
+spec:
+  selector:
+    app: adk-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

@@ -1,0 +1,6 @@
+name: sub_agent_2
+description: A sequential workflow that first refines an image prompt and then generates the image.
+agent_class: SequentialAgent
+sub_agents:
+  - config_path: ./sub_agent_3.yaml
+  - config_path: ./sub_agent_4.yaml

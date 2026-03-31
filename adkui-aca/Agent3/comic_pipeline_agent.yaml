@@ -1,0 +1,8 @@
+name: comic_pipeline
+agent_class: SequentialAgent
+description: A sequential pipeline of agents to create a comic book.
+sub_agents:
+  - config_path: ./scripting_agent.yaml
+  - config_path: ./panelization_agent.yaml
+  - config_path: ./image_synthesis_agent.yaml
+  - config_path: ./assembly_agent.yaml

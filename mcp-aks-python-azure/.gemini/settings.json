@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "azure-aca-python": {
+      "httpUrl": "https://mcp-app-penguin.lemonplant-60ec205a.westus2.azurecontainerapps.io/mcp"
+    }
+  }
+}

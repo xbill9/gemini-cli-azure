@@ -1,0 +1,38 @@
+# Images and output
+output/images/
+images/
+
+# Python ignore patterns
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+
+# Testing and caching
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Project specific (ADK)
+.adk/
+**/tmp/
+
+.adk/session.db
+
+.requirements_installed
+
+.adk
+
+.env
+
+output
