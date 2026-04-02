@@ -11,7 +11,7 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 - **AI Image Synthesis**: Generates 16:9 images for each panel using **Imagen 4.0** (via Google GenAI SDK).
 - **HTML Assembly**: Compiles the final artwork and script into a responsive HTML comic book.
 - **Comic Inspection**: Dedicated agent for summarizing and exporting generated comics as UI artifacts.
-- **Multi-Cloud Deployment**: Optimized Docker environment (**Python 3.13 + uv**) for deployment to **Google Cloud Run** and **Azure App Service**.
+- **Multi-Cloud Deployment**: Optimized Docker environment (**Python 3.13 + uv**) for deployment to **Google Cloud Run** and **Azure Container Instance (ACI)**.
 - **Low-Code Interface**: Use the ADK Builder for visual agent development.
 
 ## Project Structure
@@ -30,7 +30,6 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 - `agent_builder`: Launches the ADK Builder UI (accessible via browser) for visual agent design.
 - `myadk`: A convenience wrapper for the `adk` CLI tool.
 - `comic.sh`: Starts a local web server (port 8080) to view the generated comic.
-- `deploy-azure.sh`: Deploys the agent container to Azure App Service via ACR.
 - `deploy-aci.sh`: Deploys the agent container to Azure Container Instance via ACR.
 - `deploycloudrun.py`: Automates deployment to Google Cloud Run, including IAM and Service Account setup.
 - `fix_comic.py`: Manual utility to regenerate the `comic.html` with a default story (Momotaro).
@@ -39,14 +38,12 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 
 ## Makefile Commands
 
+- `make deploy` or `make deploy-aci`: Primary command for **Azure Container Instance (ACI)** deployment (Default).
+- `make status`: Checks the current state and URL of the Azure Container Instance.
+- `make logs`: Tails the logs from the Azure Container Instance.
+- `make endpoint`: Retrieves the public URL for the ACI deployment.
+- `make destroy`: Tear down all Azure resources (ACI, ACR, and Resource Group).
 - `make clean`: Removes log files, generated images, and temporary cache directories.
-- `make deploy`: Primary command for **Azure Container Instance (ACI)** deployment (Default).
-- `make deploy-appservice`: Deploys to **Azure App Service**.
-- `make status`: Checks the current state and URL of the Azure Container Instance (Default).
-- `make logs`: Tails the logs from the Azure Container Instance (Default).
-- `make az-status`: Checks the current state and URL of the Azure App Service.
-- `make az-logs`: Tails the logs from the Azure App Service.
-- `make endpoint`: Retrieves the public URLs for both Azure App Service and ACI deployments.
 
 ## How it Works (Agent3 & Agent4)
 
@@ -79,19 +76,14 @@ This agent provides tools to inspect the `output/` directory, summarize the gene
 ## Deployment
 
 ### Microsoft Azure (Recommended)
-To deploy the project as a container to Azure App Service:
+To deploy the project as an Azure Container Instance (ACI):
 ```bash
 make deploy
 ```
 
-Alternatively, to deploy as an Azure Container Instance (ACI):
-```bash
-make deploy-aci
-```
-
 Or using the wrapper script:
 ```bash
-./deploy-azure.sh --aci
+./deploy-aci.sh
 ```
 
 ### Google Cloud Run

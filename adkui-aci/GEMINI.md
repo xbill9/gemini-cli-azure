@@ -13,7 +13,7 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 *   **Framework:** Google ADK (Agent Development Kit) [Docs](https://google.github.io/adk-docs/)
 *   **Language:** Python 3.13
 *   **Generative AI:** Google GenAI SDK (`google-genai`), configured for Google AI (API Key) or Vertex AI (ADC).
-*   **Cloud Platforms:** Google Cloud (Run, Vertex AI), Microsoft Azure (App Service)
+*   **Cloud Platforms:** Google Cloud (Run, Vertex AI), Microsoft Azure (Container Instance)
 *   **Models:**
     *   **LLM Tasks:** `gemini-2.5-flash` (standard) or `gemini-2.5-flash-native-audio-preview-12-2025` (deployed).
     *   **Image Gen:** `imagen-4.0-fast-generate-001`.
@@ -40,7 +40,7 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
     *   `agent_builder`: Launches the ADK Builder UI.
     *   `myadk`: Wrapper for `adk` CLI.
 *   **Deployment**:
-    *   `deploy-azure.sh`: Main script for Azure App Service deployment.
+    *   `deploy-aci.sh`: Main script for Azure Container Instance (ACI) deployment.
     *   `deploycloudrun.py`: Script for Google Cloud Run deployment.
     *   `Dockerfile`: `python:3.13-slim` image using `uv` for fast package management.
 *   **Utility**:
@@ -50,10 +50,11 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 
 ## Makefile Commands
 
-*   `make deploy` or `make deploy-azure`: Primary command for Azure App Service deployment (ACR + Web App).
-*   `make az-status` or `make status`: Monitor the Azure deployment state.
-*   `make az-logs`: Tail logs from Azure App Service.
-*   `make endpoint`: Retrieve the public URL for the Azure deployment.
+*   `make deploy` or `make deploy-aci`: Primary command for Azure Container Instance deployment (ACR + ACI).
+*   `make status`: Monitor the Azure ACI deployment state.
+*   `make logs`: Tail logs from Azure Container Instance.
+*   `make endpoint`: Retrieve the public URL for the Azure ACI deployment.
+*   `make destroy`: Tear down all Azure resources (ACI, ACR, and Resource Group).
 *   `make clean`: Purge logs and generated images.
 
 ## Known Bugs & Workarounds

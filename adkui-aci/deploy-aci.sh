@@ -2,11 +2,11 @@
 # Wrapper script for Azure Container Instance (ACI) deployment using Makefile
 
 if [[ "$1" == "--status" ]]; then
-    make az-status-aci
+    make status
 elif [[ "$1" == "--logs" ]]; then
-    make az-logs-aci
+    make logs
 elif [[ "$1" == "--destroy" ]]; then
-    make az-destroy-aci
+    make destroy
 else
-    make deploy-aci
+    make deploy
 fi

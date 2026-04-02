@@ -3,7 +3,7 @@ FROM python:3.13-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
-# Disable local storage for read-only container environments like Cloud Run or App Service
+# Disable local storage for read-only container environments like Cloud Run or ACI
 ENV ADK_DISABLE_LOCAL_STORAGE=1
 
 # Set the working directory
