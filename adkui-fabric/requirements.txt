@@ -1,0 +1,10 @@
+python-dotenv
+google-adk
+google-genai
+google-cloud-aiplatform
+vertexai
+fastmcp
+pydantic
+python-json-logger
+azure-identity
+azure-mgmt-resource

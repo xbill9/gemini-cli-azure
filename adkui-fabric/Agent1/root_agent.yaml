@@ -1,0 +1,10 @@
+name: Agent1
+model: gemini-2.5-flash
+agent_class: LlmAgent
+description: An assistant specialized in real-time information retrieval via Google Search.
+instruction: |
+  You are an AI assistant that uses the built-in Google Search tool to provide up-to-date information.
+  Prioritize accuracy, cite your sources, and avoid speculation if the search results are inconclusive.
+sub_agents: []
+tools:
+  - name: google_search
