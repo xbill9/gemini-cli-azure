@@ -1,20 +1,18 @@
-# Makefile for mcp-aca-python-azure
+# Makefile for mcp-aks-python-azure
 
 # Azure Configuration
 AZ_LOCATION ?= westus2
 AZ_RESOURCE_GROUP ?= mcp-rg-westus2
 AZ_ACR_NAME ?= mcpacr$(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)v2
-AZ_CONTAINER_APP_NAME ?= mcp-app-$(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
-AZ_ACA_ENV_NAME ?= mcp-env-$(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
 AZ_AKS_CLUSTER_NAME ?= mcp-aks-$(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
 IMAGE_NAME ?= mcp-server-image
-IMAGE_TAG ?= latest
+IMAGE_TAG ?= $(shell git rev-parse --short HEAD 2>/dev/null || date +%s)
 
 # Derived Azure variables
 ACR_LOGIN_SERVER := $(AZ_ACR_NAME).azurecr.io
 FULL_IMAGE_NAME := $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)
 
-.PHONY: all install run build test lint format type-check status git-status az-status endpoint pull push clean deploy docker-build az-login acr-create acr-login push-acr az-deploy az-logs az-aca-env aks-create aks-get-credentials aks-deploy aks-status aks-destroy
+.PHONY: all install run build test lint format type-check status git-status endpoint pull push clean deploy docker-build az-login acr-create acr-login push-acr aks-create aks-get-credentials aks-deploy aks-status aks-destroy az-destroy destroy
 
 all: install run
 
@@ -44,16 +42,12 @@ test:
 	@echo "No tests implemented yet."
 
 # Target to show both git and Azure status
-status: az-status aks-status
+status: aks-status
+
 # Target to show git status
 git-status:
 	@echo "Showing git status..."
 	@git status
-
-# Target to show Azure Container App status
-az-status:
-	@echo "Checking Azure Container App status for $(AZ_CONTAINER_APP_NAME)..."
-	@az containerapp show --name $(AZ_CONTAINER_APP_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query "{Name:name, State:properties.provisioningState, URL:properties.configuration.ingress.fqdn}" --output table 2>/dev/null || echo "Container App $(AZ_CONTAINER_APP_NAME) not found."
 
 # Target to show AKS status
 aks-status:
@@ -68,8 +62,6 @@ aks-status:
 
 # Target to get the public endpoint URL
 endpoint:
-	@echo "ACA Endpoint:"
-	@az containerapp show --name $(AZ_CONTAINER_APP_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query "properties.configuration.ingress.fqdn" --output tsv 2>/dev/null || echo "Container App $(AZ_CONTAINER_APP_NAME) not found."
 	@echo "AKS Endpoint:"
 	@kubectl get svc mcp-server-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "AKS service not found or IP not yet assigned."
 
@@ -114,39 +106,6 @@ push-acr: docker-build acr-create acr-login
 # Deploy to Azure Kubernetes Service (AKS)
 deploy: aks-deploy
 
-az-aca-env:
-	@echo "Checking if Container App Environment $(AZ_ACA_ENV_NAME) exists..."
-	@az containerapp env show --name $(AZ_ACA_ENV_NAME) --resource-group $(AZ_RESOURCE_GROUP) > /dev/null 2>&1 || \
-		(echo "Creating Container App Environment $(AZ_ACA_ENV_NAME)..." && \
-		az containerapp env create --name $(AZ_ACA_ENV_NAME) --resource-group $(AZ_RESOURCE_GROUP) --location $(AZ_LOCATION))
-
-az-deploy: push-acr az-aca-env
-	@echo "Enabling ACR admin user..."
-	@az acr update --name $(AZ_ACR_NAME) --resource-group $(AZ_RESOURCE_GROUP) --admin-enabled true
-	@echo "Deploying to Azure Container App..."
-	@AZ_ACR_USERNAME=$$(az acr credential show --name $(AZ_ACR_NAME) --query "username" -o tsv) && \
-	AZ_ACR_PASSWORD=$$(az acr credential show --name $(AZ_ACR_NAME) --query "passwords[0].value" -o tsv) && \
-	az containerapp create \
-		--name $(AZ_CONTAINER_APP_NAME) \
-		--resource-group $(AZ_RESOURCE_GROUP) \
-		--environment $(AZ_ACA_ENV_NAME) \
-		--image $(FULL_IMAGE_NAME) \
-		--target-port 8080 \
-		--ingress external \
-		--registry-server $(ACR_LOGIN_SERVER) \
-		--registry-username $$AZ_ACR_USERNAME \
-		--registry-password $$AZ_ACR_PASSWORD \
-		--env-vars PORT=8080 \
-		--cpu 0.5 \
-		--memory 1.0Gi \
-		--min-replicas 1 \
-		--max-replicas 1
-	@echo "Deployment complete. Endpoint: https://$$(az containerapp show --name $(AZ_CONTAINER_APP_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query properties.configuration.ingress.fqdn -o tsv)"
-
-az-logs:
-	@echo "Fetching logs for $(AZ_CONTAINER_APP_NAME)..."
-	@az containerapp logs show --name $(AZ_CONTAINER_APP_NAME) --resource-group $(AZ_RESOURCE_GROUP)
-
 # AKS related targets
 aks-create: acr-create
 	@echo "Checking if AKS cluster $(AZ_AKS_CLUSTER_NAME) exists..."
@@ -178,6 +137,8 @@ az-destroy:
 	@az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait
 	@echo "Deletion of $(AZ_RESOURCE_GROUP) initiated in the background."
 
+# Alias for az-destroy to clean all AKS resources
+destroy: az-destroy
 
 .PHONY: clean
 clean:

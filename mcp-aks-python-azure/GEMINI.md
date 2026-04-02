@@ -4,80 +4,44 @@ This document provides context for the Gemini Code Assistant to understand the p
 
 ## Project Overview
 
-This is a **Python-based Model Context Protocol (MCP) server** using the `FastMCP` class from the `mcp` SDK. It is designed to expose tools (like `greet`) over HTTP for integration with MCP clients (such as Claude Desktop or Gemini clients).
+Python-based **Model Context Protocol (MCP)** server using `FastMCP`. Deployed to **Azure Kubernetes Service (AKS)** over HTTP.
 
 ## Key Technologies
 
-*   **Language:** Python 3.13 (as per Dockerfile)
-*   **SDK:** `mcp` (Model Context Protocol SDK)
-*   **Library:** `FastMCP` (for simplified server creation)
-*   **Logging:** `python-json-logger`
-*   **Dependency Management:** `pip` / `requirements.txt`
-*   **Linting:** `flake8`
+*   **Language:** Python 3.13 (containerized)
+*   **Framework:** `FastMCP` (MCP SDK)
+*   **Infrastructure:** Azure Kubernetes Service (AKS), Azure Container Registry (ACR)
+*   **Logging:** `python-json-logger` to stderr
+
+## Core Commands (Makefile)
+
+### Local Development
+- `make install`: Install Python dependencies.
+- `make run`: Start the server locally (default port 8080).
+- `make lint`: Run flake8 linting.
+
+### Azure Infrastructure (One-time)
+- `make az-login`: Login to Azure CLI.
+- `make aks-create`: Create Resource Group, ACR, and AKS cluster.
+- `make aks-get-credentials`: Configure kubectl for the AKS cluster.
+
+### Deployment & Status
+- `make deploy`: Build, push, and deploy the application to AKS.
+- `make status`: Check AKS and Kubernetes resource status.
+- `make endpoint`: Get the public IP of the LoadBalancer service.
+
+### Cleanup
+- `make aks-destroy`: Delete the AKS cluster only.
+- `make az-destroy`: Delete the entire Resource Group and all assets.
 
 ## Project Structure
 
-* `main.py`: The entry point of the application. Initializes the `FastMCP` server ("hello-world-server") and defines tools.
-* `requirements.txt`: Python dependencies.
-* `Makefile`: Development shortcuts (test, lint, clean, deploy, status).
-* `Dockerfile`: Container configuration using `python:3.13-slim`.
+- `main.py`: FastMCP server definition and tools (`greet`).
+- `k8s.yaml`: Kubernetes Deployment (port 8080) and LoadBalancer Service (port 80).
+- `Makefile`: Automation for the entire lifecycle.
+- `Dockerfile`: Multi-stage build (slim) for Python 3.13.
 
-## Development Setup
-
-1.  **Create and activate a virtual environment (optional but recommended):**
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
-
-2.  **Install Dependencies:**
-    ```bash
-    make install
-    ```
-
-## Running the Server
-
-The server is configured to run using the `HTTP` transport on `http://0.0.0.0:8080`.
-
-```bash
-make run
-```
-
-*Note: This is an MCP server running over HTTP and should be started before an MCP client attempts to connect to it.*
-
-## Code Quality
-
-*   **Linting:** `make lint` (runs flake8)
-*   **Formatting:** `make format` (placeholder)
-*   **Type Checking:** `make type-check` (placeholder)
-*   **Testing:** `make test` (placeholder)
-
-## Deployment
-
-The project is configured for deployment to **Azure Container Apps (ACA)** or **Azure Kubernetes Service (AKS)** using Docker containers.
-
-### Deployment Prerequisites
-- Azure CLI installed and logged in (`az login`).
-- Docker installed locally.
-- `kubectl` installed locally (for AKS).
-
-### Deployment Steps (AKS - Default)
-1.  **Deploy to Azure:** `make deploy`
-    - This command handles ACR creation, image build, push, getting AKS credentials, and applying the `k8s.yaml` manifest.
-    - *Note: Ensure the AKS cluster exists first with `make aks-create`.*
-2.  **Check Status:** `make status`
-3.  **Get Endpoint:** `make endpoint`
-4.  **Destroy AKS Cluster:** `make aks-destroy`
-
-### Deployment Steps (ACA)
-1.  **Deploy to ACA:** `make az-deploy`
-    - This command handles ACR creation, image build, push, Container App Environment creation, and ACA deployment.
-2.  **View Logs:** `make az-logs`
-3.  **Destroy Resources:** `make az-destroy` (Deletes the resource group)
-
-
-## Python MCP Developer Resources
-
-*   **MCP Python SDK (GitHub):** [https://github.com/mcp-protocol/mcp-python-sdk](https://github.com/mcp-protocol/mcp-python-sdk)
-*   **FastMCP Documentation:** [https://gofastmcp.com/](https://gofastmcp.com/)
-*   **`mcp` package on PyPI:** [https://pypi.org/project/mcp/](https://pypi.org/project/mcp/)
+## Developer Notes
+- Logs go to `stderr` to keep `stdout` clean for JSON-RPC messages.
+- The `/health` endpoint is used for Kubernetes liveness/readiness probes.
+- AKS deployment uses `sed` to inject the image tag into `k8s.yaml`.

@@ -75,7 +75,7 @@ If you are adding this to an MCP client config (e.g., `claude_desktop_config.jso
 ## Tools
 
 ### `greet`
-- **Description:** Get a greeting from the local HTTP server.
+- **Description:** Get a greeting from a local HTTP server.
 - **Parameters:**
     - `param` (string): The text or name to echo back.
 - **Returns:** The string passed in `param`.
@@ -93,28 +93,35 @@ The project includes a `Makefile` to automate deployment to **Azure Kubernetes S
     ```bash
     make aks-create
     ```
-    *Note: This process may take 10-15 minutes.*
+    *Note: This process may take 10-15 minutes. It handles Resource Group, ACR, and AKS creation.*
 
 3.  **Deploy to AKS:**
     ```bash
     make deploy
     ```
     *This command performs the following:*
-    - Builds the Docker image locally.
-    - Pushes the image to Azure Container Registry (ACR).
-    - Configures `kubectl` credentials.
-    - Applies the Kubernetes manifests (`k8s.yaml`) to the cluster.
+    - Builds the Docker image locally (`make docker-build`).
+    - Creates and logs into Azure Container Registry (ACR).
+    - Pushes the image to ACR.
+    - Configures `kubectl` credentials (`make aks-get-credentials`).
+    - Deploys the Kubernetes manifests (`k8s.yaml`) to the cluster with the correct image tag.
 
-4.  **Check Status:**
+4.  **Check Status and Endpoint:**
     ```bash
     make status
+    make endpoint
     ```
 
-### Alternative Deployment (ACA)
+### Cleanup
 
-If you prefer **Azure Container Apps (ACA)**, you can use:
+To delete the AKS cluster:
 ```bash
-make az-deploy
+make aks-destroy
+```
+
+To delete **all** resources (including the resource group):
+```bash
+make az-destroy
 ```
 
 ## Project Structure
