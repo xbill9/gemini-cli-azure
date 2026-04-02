@@ -4,7 +4,9 @@ This document provides context for the Gemini Code Assistant to understand the A
 
 ## Project Overview
 
-This project implements a multi-agent system using the **Google ADK** to automate the creation of comic books. It follows a sequential pipeline where specialized agents handle scripting, panelization, image synthesis, and assembly. It also supports multi-cloud deployment to Google Cloud and Microsoft Azure (Container Apps, App Service, and Container Instances).
+This project implements a multi-agent system using the **Google ADK** to automate the creation of comic books. It follows a sequential pipeline where specialized agents handle scripting, panelization, image synthesis, and assembly. It also supports multi-cloud deployment to Google Cloud and Microsoft Azure (Container Apps).
+
+**Current Azure Deployment:** [https://adk-app-penguin.delightfulbeach-bf25c97b.westus2.azurecontainerapps.io](https://adk-app-penguin.delightfulbeach-bf25c97b.westus2.azurecontainerapps.io)
 
 It is based on the solution to the codelab: [Create a low-code agent with ADK visual builder](https://codelabs.developers.google.com/codelabs/create-low-code-agent-with-ADK-visual-builder)
 
@@ -13,7 +15,7 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 *   **Framework:** Google ADK (Agent Development Kit) [Docs](https://google.github.io/adk-docs/)
 *   **Language:** Python 3.13
 *   **Generative AI:** Google GenAI SDK (`google-genai`), configured for Google AI (API Key) or Vertex AI (ADC).
-*   **Cloud Platforms:** Google Cloud (Run, Vertex AI), Microsoft Azure (ACA, App Service, ACI)
+*   **Cloud Platforms:** Google Cloud (Run, Vertex AI), Microsoft Azure (ACA)
 *   **Models:**
     *   **LLM Tasks:** `gemini-2.5-flash` (standard) or `gemini-2.5-flash-native-audio-preview-12-2025` (deployed).
     *   **Image Gen:** `imagen-4.0-fast-generate-001`.
@@ -40,9 +42,7 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
     *   `agent_builder`: Launches the ADK Builder UI.
     *   `myadk`: Wrapper for `adk` CLI.
 *   **Deployment**:
-    *   `deploy-aca.sh`: Main script for Azure Container Apps (ACA) deployment (Preferred).
-    *   `deploy-azure.sh`: Script for Azure App Service deployment.
-    *   `deploy-aci.sh`: Script for Azure Container Instances (ACI) deployment.
+    *   `deploy-aca.sh`: Main script for Azure Container Apps (ACA) deployment.
     *   `deploycloudrun.py`: Script for Google Cloud Run deployment.
     *   `Dockerfile`: `python:3.13-slim` image using `uv` for fast package management.
 *   **Utility**:
@@ -53,12 +53,11 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 ## Makefile Commands
 
 *   `make deploy` or `make deploy-aca`: Primary command for Azure Container Apps deployment.
-*   `make deploy-appservice`: Deploy to Azure App Service.
-*   `make deploy-aci`: Deploy to Azure Container Instances.
 *   `make status`: Monitor the Azure ACA deployment state.
 *   `make logs`: Tail logs from Azure Container Apps.
-*   `make endpoint`: Retrieve the public URL for all Azure deployments.
+*   `make endpoint`: Retrieve the public URL for the Azure ACA deployment.
 *   `make clean`: Purge logs and generated images.
+*   `make az-destroy`: Delete the Azure Resource Group.
 
 ## Known Bugs & Workarounds
 
