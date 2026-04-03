@@ -1,6 +1,6 @@
 # Makefile for ADK Comic Pipeline
 
-.PHONY: clean test deploy run endpoint az-destroy
+.PHONY: clean test deploy run endpoint status az-destroy
 
 clean:
 	@echo "Cleaning up generated images and temporary files..."
@@ -39,12 +39,18 @@ aks-status:
 azure-status:
 	@az containerapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "{Name:name, State:properties.provisioningState, URL:properties.configuration.ingress.fqdn}" --output table
 
+status: aks-status
+
 az-destroy:
 	@echo "Destroying resource group: biometric-scout-rg..."
 	@az group delete --name biometric-scout-rg --yes --no-wait
 	@echo "Deletion command sent successfully."
 
 endpoint:
-	@kubectl get svc biometric-scout-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "AKS service IP not yet assigned."
+	@if [ "$$(kubectl get ingress biometric-scout-ingress -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)" ]; then \
+		echo "https://$$(kubectl get ingress biometric-scout-ingress -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)"; \
+	else \
+		echo "AKS endpoint not yet assigned."; \
+	fi
 
 

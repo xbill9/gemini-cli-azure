@@ -69,7 +69,7 @@ az containerapp create \
         VERTEX_AI="FALSE" \
         VERTEX="no" \
         GOOGLE_API_KEY="${GEMINI_API_KEY}" \
-        MODEL_ID="gemini-2.0-flash-exp" \
+        MODEL_ID="gemini-2.5-flash-native-audio-preview-12-2025" \
         PORT=8080
 
 echo "Azure Container App Deployment complete."

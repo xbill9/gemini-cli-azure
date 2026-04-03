@@ -35,16 +35,48 @@ spec:
         - name: GOOGLE_API_KEY
           value: "GEMINI_API_KEY_PLACEHOLDER"
         - name: MODEL_ID
-          value: "gemini-2.0-flash-exp"
+          value: "gemini-2.5-flash-native-audio-preview-12-2025"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: biometric-scout-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 80
     targetPort: 8080
   selector:
     app: biometric-scout-app
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: biometric-scout-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - 20.104.136.242.nip.io
+    secretName: biometric-scout-tls
+  rules:
+  - host: 20.104.136.242.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: biometric-scout-service
+            port:
+              number: 80
