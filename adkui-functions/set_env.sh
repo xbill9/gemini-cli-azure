@@ -21,17 +21,13 @@ else
 fi
 
 cat <<EOF > .env
-GOOGLE_GENAI_USE_VERTEXAI=false
+GOOGLE_GENAI_USE_VERTEXAI=0
 GOOGLE_CLOUD_PROJECT=$PROJECT_ID
-GOOGLE_CLOUD_LOCATION=us-east1
+GOOGLE_CLOUD_LOCATION=us-central1
 IMAGEN_MODEL="imagen-4.0-fast-generate-001"
 GENAI_MODEL="gemini-2.5-flash"
 GOOGLE_API_KEY=$GOOGLE_API_KEY
 GEMINI_API_KEY=$GOOGLE_API_KEY
-GEMINI_KEY=$GOOGLE_API_KEY
-MODEL_ID="gemini-2.5-flash-native-audio-latest"
-APP_NAME="biometric-scout-app"
-RESOURCE_GROUP="biometric-scout-rg"
 EOF
 
 source .env

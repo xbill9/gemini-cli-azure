@@ -18,7 +18,7 @@ def report_digit(count: int):
     print(f"\n[SERVER-SIDE TOOL EXECUTION] DIGIT DETECTED: {count}\n")
     return {"status": "success", "digit": count}
 
-MODEL_ID = os.getenv("MODEL_ID", "gemini-2.5-flash-native-audio-preview-12-2025")
+MODEL_ID = os.getenv("MODEL_ID", "gemini-2.5-flash-native-audio-latest")
 logger.info(f"Agent initializing with MODEL_ID: {MODEL_ID}")
 
 root_agent = Agent(

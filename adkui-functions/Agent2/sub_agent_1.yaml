@@ -1,0 +1,8 @@
+name: sub_agent_1
+model: gemini-2.5-flash
+agent_class: LlmAgent
+instruction: You are an Agent that can take instructions about an image and
+  create an image using the create_image tool.
+sub_agents: []
+tools:
+  - name: Agent2.image_creation_tool.create_image

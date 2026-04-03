@@ -1,2 +1,2 @@
-cd $HOME/gemini-cli-azure/level_3-appservice/backend/
+cd $HOME/gemini-cli-azure/level_3-aci/backend/
 python app/main.py

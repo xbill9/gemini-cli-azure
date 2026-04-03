@@ -1,4 +1,4 @@
-cd $HOME/gemini-cli-azure/level_3-appservice
+cd $HOME/gemini-cli-azure/level_3-aci
 
 cat <<EOF > Dockerfile
 FROM node:20-slim as builder
@@ -20,6 +20,10 @@ RUN npm --prefix frontend run build
 # STAGE 2: Build the Python Production Image
 # This stage creates the final, lean container with our Python app and the built frontend.
 FROM python:3.13-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
 
 # Set the final working directory
 WORKDIR /app
@@ -51,5 +55,5 @@ export PROJECT_ID=$(cat ~/project_id.txt)
 export REGION=us-east1
 export SERVICE_NAME=biometric-scout
 export IMAGE_PATH=gcr.io/${PROJECT_ID}/${SERVICE_NAME}
-cd $HOME/gemini-cli-azure/level_3-appservice
+cd $HOME/gemini-cli-azure/level_3-aci
 gcloud builds submit . --tag ${IMAGE_PATH}

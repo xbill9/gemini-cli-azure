@@ -2,6 +2,8 @@ SUBDIRS := adkui-aca \
 	adkui-aci \
 	adkui-aks \
 	adkui-appservice \
+	adkui-fabric \
+	adkui-functions \
 	level_3-aca \
 	level_3-aci \
 	level_3-aks \
@@ -16,7 +18,7 @@ SUBDIRS := adkui-aca \
 	mcp-stdio-python-azure \
 	mcp-stdio-python-azurecli
 
-.PHONY: list clean release az-destroy $(addprefix clean-,$(SUBDIRS)) $(addprefix release-,$(SUBDIRS)) $(addprefix az-destroy-,$(SUBDIRS))
+.PHONY: list clean release destroy az-destroy $(addprefix clean-,$(SUBDIRS)) $(addprefix release-,$(SUBDIRS)) $(addprefix az-destroy-,$(SUBDIRS))
 
 list:
 	@echo "Subdirectories:"
@@ -27,6 +29,8 @@ list:
 clean: $(addprefix clean-,$(SUBDIRS))
 
 release: $(addprefix release-,$(SUBDIRS))
+
+destroy: az-destroy
 
 az-destroy: $(addprefix az-destroy-,$(SUBDIRS))
 

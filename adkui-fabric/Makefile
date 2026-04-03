@@ -128,11 +128,9 @@ az-logs:
 
 # Target to delete the Azure Resource Group and all resources within it
 az-destroy:
-	@echo "WARNING: This will delete the resource group $(AZ_RESOURCE_GROUP) and all contained resources (ACR, ACA, etc.)"
-	@read -p "Are you sure you want to continue? [y/N] " ans && [ $${ans:-N} = y ]
 	@echo "Deleting resource group $(AZ_RESOURCE_GROUP)..."
-	@az group delete --name $(AZ_RESOURCE_GROUP) --yes
-	@echo "Resource group $(AZ_RESOURCE_GROUP) deleted successfully."
+	@az group delete --name $(AZ_RESOURCE_GROUP) --yes --no-wait
+	@echo "Resource group $(AZ_RESOURCE_GROUP) deletion initiated."
 
 clean:
 	@echo "Cleaning up generated images and temporary files..."

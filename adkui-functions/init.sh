@@ -1,13 +1,11 @@
 #!/bin/bash
 
 # Check if gcloud is authenticated
-...
-# Check if Azure CLI is authenticated
-if ! az account show > /dev/null 2>&1; then
-    echo "Warning: No active Azure account found."
-    echo "Please run 'az login' and try again if you plan to deploy to Azure."
+if ! gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q "@"; then
+    echo "Error: No active gcloud account found."
+    echo "Please run 'gcloud auth login' and try again."
+    exit 1
 fi
-
 
 if [ -f "$HOME/project_id.txt" ]; then
     PROJECT_ID=$(cat "$HOME/project_id.txt")
@@ -37,17 +35,13 @@ gcloud services enable cloudaicompanion.googleapis.com
 #curl -s https://raw.githubusercontent.com/haren-bh/gcpbillingactivate/main/activate.py | python3
 
 cat <<EOF > .env
-GOOGLE_GENAI_USE_VERTEXAI=false
+GOOGLE_GENAI_USE_VERTEXAI=0
 GOOGLE_CLOUD_PROJECT=$PROJECT_ID
-GOOGLE_CLOUD_LOCATION=us-east1
+GOOGLE_CLOUD_LOCATION=us-central1
 IMAGEN_MODEL="imagen-4.0-fast-generate-001"
 GENAI_MODEL="gemini-2.5-flash"
 GOOGLE_API_KEY=$GOOGLE_API_KEY
 GEMINI_API_KEY=$GOOGLE_API_KEY
-GEMINI_KEY=$GOOGLE_API_KEY
-MODEL_ID="gemini-2.5-flash-native-audio-latest"
-APP_NAME="biometric-scout-app"
-RESOURCE_GROUP="level_3-aci"
 EOF
 
 source .env

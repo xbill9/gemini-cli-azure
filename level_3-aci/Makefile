@@ -24,14 +24,14 @@ deploy-azure:
 	./deploy-azure.sh
 
 azure-status:
-	@az container show --name biometric-scout-aci --resource-group biometric-scout-rg --query "instanceView.state" -o table
+	@az container show --name biometric-scout-aci --resource-group level_3-aci --query "instanceView.state" -o table
 
 az-destroy:
-	@echo "Destroying resource group: biometric-scout-rg..."
-	@az group delete --name biometric-scout-rg --yes --no-wait
+	@echo "Destroying resource group: level_3-aci..."
+	@az group delete --name level_3-aci --yes --no-wait
 	@echo "Deletion command sent successfully."
 
 endpoint:
-	@az container show --name biometric-scout-aci --resource-group biometric-scout-rg --query "ipAddress.fqdn" -o tsv
+	@az container show --name biometric-scout-aci --resource-group level_3-aci --query "ipAddress.fqdn" -o tsv
 
 

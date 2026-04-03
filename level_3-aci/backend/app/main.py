@@ -139,7 +139,7 @@ async def websocket_endpoint(
     # we default to TEXT for better performance.
 
     model_name = root_agent.model
-    is_native_audio = "native-audio" in model_name.lower() or "live" in model_name.lower()
+    is_native_audio = "native-audio" in model_name.lower() or "live" in model_name.lower() or "2.0-flash" in model_name.lower() or "2.5-flash" in model_name.lower()
 
     if is_native_audio:
         # Native audio models require AUDIO response modality
