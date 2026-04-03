@@ -42,9 +42,13 @@ azure-status:
 status: aks-status
 
 az-destroy:
-	@echo "Destroying resource group: biometric-scout-rg..."
+	@echo "Destroying all Azure resources in biometric-scout-rg..."
 	@az group delete --name biometric-scout-rg --yes --no-wait
-	@echo "Deletion command sent successfully."
+	@echo "Cleaning up local Kubernetes context..."
+	@kubectl config delete-context biometric-scout-aks >/dev/null 2>&1 || true
+	@kubectl config delete-cluster biometric-scout-aks >/dev/null 2>&1 || true
+	@kubectl config unset users.clusterUser_biometric-scout-rg_biometric-scout-aks >/dev/null 2>&1 || true
+	@echo "Deletion command sent and local configuration cleaned up."
 
 endpoint:
 	@if [ "$$(kubectl get ingress biometric-scout-ingress -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)" ]; then \
