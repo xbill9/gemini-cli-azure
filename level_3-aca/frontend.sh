@@ -1,3 +1,5 @@
-cd $HOME/gemini-cli-azure/level_3-appservice/frontend
+#!/bin/bash
+# Build the frontend
+cd frontend
 npm install
 npm run build

@@ -41,7 +41,7 @@ COPY backend/app/ .
 # When main.py is in /app, "../../" resolves to "/", so it looks for /frontend/dist
 COPY --from=builder /app/frontend/dist /frontend/dist
 
-# Cloud Run injects a PORT environment variable, which your main.py uses (defaults to 8080).
+# Expose the port the app runs on
 EXPOSE 8080
 
 # Set the command to run the application.

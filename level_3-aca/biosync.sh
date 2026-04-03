@@ -1,2 +1,4 @@
-cd $HOME/gemini-cli-azure/level_3-appservice/backend/
-python app/main.py
+#!/bin/bash
+# Run the application locally
+cd backend/app
+python main.py
