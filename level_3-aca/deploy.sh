@@ -2,7 +2,7 @@
 # Azure Container Apps Deployment Configuration
 SERVICE_NAME="biometric-scout-app"
 IMAGE_NAME="biometric-scout-image"
-RESOURCE_GROUP="biometric-scout-rg"
+RESOURCE_GROUP="aca"
 LOCATION="canadaeast"
 CONTAINERAPP_ENV="biometric-scout-env"
 ACR_NAME="biometricacr$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)v2"

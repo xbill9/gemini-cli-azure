@@ -19,12 +19,12 @@ deploy:
 	./deploy.sh
 
 azure-status:
-	@az containerapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "{Name:name, State:properties.provisioningState, URL:properties.configuration.ingress.fqdn}" --output table
+	@az containerapp show --name biometric-scout-app --resource-group aca --query "{Name:name, State:properties.provisioningState, URL:properties.configuration.ingress.fqdn}" --output table
 
 az-destroy:
-	@echo "Destroying resource group: biometric-scout-rg..."
-	@az group delete --name biometric-scout-rg --yes --no-wait
+	@echo "Destroying resource group: aca..."
+	@az group delete --name aca --yes --no-wait
 	@echo "Deletion command sent successfully."
 
 endpoint:
-	@az containerapp show --name biometric-scout-app --resource-group biometric-scout-rg --query "properties.configuration.ingress.fqdn" -o tsv
+	@az containerapp show --name biometric-scout-app --resource-group aca --query "properties.configuration.ingress.fqdn" -o tsv
