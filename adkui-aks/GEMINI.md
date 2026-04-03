@@ -23,15 +23,22 @@ It is based on the solution to the codelab: [Create a low-code agent with ADK vi
 
 ## Project Structure
 
-*   `Agent1/`: Simple agent with a Google Search tool. Uses `root_agent.yaml`.
-*   `Agent2/`: Image generation agent demonstrating sub-agent coordination.
-*   `Agent3/`: Primary comic pipeline implementation (Sequential Pipeline).
-    *   `root_agent.yaml`: Studio Director.
-    *   `comic_pipeline_agent.yaml`: Orchestrator.
-    *   `scripting_agent.yaml`, `panelization_agent.yaml`, `image_synthesis_agent.yaml`, `assembly_agent.yaml`: Specialized stage agents.
-    *   `tools/`: `image_generation.py` (Google GenAI/Imagen 4.0) and `file_writer.py` (HTML generation).
-*   `Agent4/`: Comic Reader agent.
-    *   `tools/comic_reader.py`: Tools for listing, summarizing, and exporting comics as ADK artifacts.
+*   `Agent1/`: **Real-time Search Assistant**. A standalone agent featuring the `google_search` tool for up-to-date information retrieval. Uses `root_agent.yaml`.
+*   `Agent2/`: **Multistage Image Generation**. Demonstrates complex sub-agent coordination:
+    *   `root_agent.yaml`: Orchestrates the request.
+    *   `sub_agent_2.yaml`: A `SequentialAgent` workflow.
+    *   `sub_agent_3.yaml`: **AI Prompt Engineer**, specializing in expanding user ideas into detailed Imagen prompts.
+    *   `sub_agent_4.yaml`: **Technical Artist**, executes the prompt via the `create_image` tool.
+*   `Agent3/`: **The Production Pipeline**. A sophisticated 4-stage sequential workflow:
+    *   `root_agent.yaml`: **Studio Director**, manages the high-level delegation.
+    *   `comic_pipeline_agent.yaml`: **Orchestrator**, defines the execution sequence.
+    *   `scripting_agent.yaml`: Generates narratives and character manifests.
+    *   `panelization_agent.yaml`: Breaks down the script into exactly 8 storyboards.
+    *   `image_synthesis_agent.yaml`: Triggers the `generate_image` tool. **Note:** Uses `gemini-2.5-flash` for multimodal editing and `Imagen 4.0` for new generation.
+    *   `assembly_agent.yaml`: Packages assets into a responsive HTML5 comic.
+    *   `tools/`: `image_generation.py` (GenAI SDK) and `file_writer.py` (Asset management).
+*   `Agent4/`: **The Comic Inspector**. Provides a dedicated environment for post-production review:
+    *   `tools/comic_reader.py`: Tools for listing, text-based summarization, and **Artifact Exporting** (embedding images into self-contained HTML for viewing within the ADK Visual Builder).
 *   `images/` & `output/`: Local storage for generated assets and final `comic.html`.
 
 ## Tools & Scripts

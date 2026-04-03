@@ -2,12 +2,15 @@
 
 # Azure Configuration
 AZ_LOCATION ?= westus2
-AZ_RESOURCE_GROUP ?= adk-rg-westus2
+AZ_RESOURCE_GROUP ?= adk-rg-aks
 HOSTNAME_ID := $(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
 AZ_ACR_NAME ?= adkacr$(HOSTNAME_ID)v2
 AZ_AKS_CLUSTER_NAME ?= adk-aks-$(HOSTNAME_ID)
 IMAGE_NAME ?= adk-image
 IMAGE_TAG ?= latest
+
+# Export variables for sub-processes (scripts)
+export AZ_LOCATION AZ_RESOURCE_GROUP AZ_ACR_NAME AZ_AKS_CLUSTER_NAME IMAGE_NAME IMAGE_TAG
 
 # Credentials and Project Info
 PROJECT_ID := $(shell cat ~/project_id.txt 2>/dev/null || echo "unknown-project")

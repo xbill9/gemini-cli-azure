@@ -6,7 +6,7 @@ set -e
 
 # Default configurations
 AZ_LOCATION=${AZ_LOCATION:-"westus2"}
-AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-westus2"}
+AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-fabric"}
 HOSTNAME_ID=$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
 AZ_ACR_NAME=${AZ_ACR_NAME:-"adkacr${HOSTNAME_ID}v2"}
 AZ_AKS_CLUSTER_NAME=${AZ_AKS_CLUSTER_NAME:-"adk-aks-${HOSTNAME_ID}"}
@@ -36,9 +36,9 @@ az group create --name "$AZ_RESOURCE_GROUP" --location "$AZ_LOCATION"
 
 # 2. Create ACR
 echo "Checking if ACR $AZ_ACR_NAME exists..."
-if ! az acr show --name "$AZ_ACR_NAME" --resource-group "$AZ_RESOURCE_GROUP" > /dev/null 2>&1; then
+EXISTING_ACR_RG=$(az acr list --query "[?name=='$AZ_ACR_NAME'].resourceGroup" -o tsv); if [ -z "$EXISTING_ACR_RG" ]; then
     echo "Creating ACR $AZ_ACR_NAME..."
-    az acr create --name "$AZ_ACR_NAME" --resource-group "$AZ_RESOURCE_GROUP" --sku Basic
+    az acr create --name "$AZ_ACR_NAME" --resource-group "$AZ_RESOURCE_GROUP" --sku Basic; else echo "Found existing ACR in $EXISTING_ACR_RG"; AZ_RESOURCE_GROUP="$EXISTING_ACR_RG";
 fi
 
 # 3. Authenticate with ACR
