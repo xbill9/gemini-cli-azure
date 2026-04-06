@@ -1,22 +1,4 @@
-SUBDIRS := adkui-aca \
-	adkui-aci \
-	adkui-aks \
-	adkui-appservice \
-	adkui-fabric \
-	adkui-functions \
-	level_3-aca \
-	level_3-aci \
-	level_3-aks \
-	level_3-appservice \
-	mcp-aca-python-azure \
-	mcp-aci-python-azure \
-	mcp-aks-python-azure \
-	mcp-appservice-python-azure \
-	mcp-fabric-python-azure \
-	mcp-functions-python-azure \
-	mcp-https-python-azure \
-	mcp-stdio-python-azure \
-	mcp-stdio-python-azurecli
+SUBDIRS := $(sort $(patsubst %/,%,$(filter-out .gemini/ .git/,$(wildcard */))))
 
 .PHONY: list clean release destroy az-destroy $(addprefix clean-,$(SUBDIRS)) $(addprefix release-,$(SUBDIRS)) $(addprefix az-destroy-,$(SUBDIRS))
 
