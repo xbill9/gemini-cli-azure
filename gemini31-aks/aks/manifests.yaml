@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: biometric-scout-app
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: biometric-scout-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: biometric-scout-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - biometric-scout-penguinv3.eastus.cloudapp.azure.com
+    secretName: biometric-tls
+  rules:
+  - host: biometric-scout-penguinv3.eastus.cloudapp.azure.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: biometric-scout-app
+            port:
+              number: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: biometric-scout-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: biometric-scout-app
+  template:
+    metadata:
+      labels:
+        app: biometric-scout-app
+    spec:
+      containers:
+      - name: biometric-scout-app
+        image: ${ACR_LOGIN_SERVER}/biometric-scout-image:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "${PROJECT_ID}"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "us-east1"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "False"
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: adk-secrets
+              key: GOOGLE_API_KEY
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: adk-secrets
+              key: GOOGLE_API_KEY
+        - name: GEMINI_KEY
+          valueFrom:
+            secretKeyRef:
+              name: adk-secrets
+              key: GOOGLE_API_KEY
+        - name: MODEL_ID
+          value: "gemini-3.1-flash-live-preview"
+        - name: PORT
+          value: "8080"
+        - name: VIDEO_FPS
+          value: "2.0"
+        - name: HEARTBEAT_INTERVAL
+          value: "10.0"
+      imagePullSecrets:
+      - name: acr-secret

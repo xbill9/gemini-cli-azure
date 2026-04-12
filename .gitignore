@@ -30,3 +30,6 @@ level_3-fargate/task-definition.json
 
 .adk
 __pycache__
+
+gemini31-aks/biometric.crt
+gemini31-aks/biometric.key
