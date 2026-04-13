@@ -1,0 +1,22 @@
+[project]
+name = "researcher-builder-agent"
+version = "0.1.0"
+description = "Researcher microservice agent"
+requires-python = ">=3.13"
+dependencies = [
+    "shared-utils",
+    "google-adk",
+    "a2a-sdk",
+    "fastapi",
+    "uvicorn",
+    "python-json-logger",
+    "google-cloud-logging",
+    "opentelemetry-exporter-gcp-trace",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
