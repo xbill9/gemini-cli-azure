@@ -1,6 +1,6 @@
-# AI Course Creator (Distributed Multi-Agent System)
+# AI Course Creator (Distributed Multi-Agent System) - Azure Container Apps
 
-A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules.
+A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure Container Apps (ACA)** while maintaining compatibility with local development and Google Cloud services.
 
 ## Architecture
 
@@ -15,7 +15,8 @@ This project uses a distributed microservices architecture where each agent runs
 ## Project Structure
 
 ```
-multi-agent/
+multi-aca/
+├── aca/                  # Azure Container Apps deployment scripts
 ├── agents/
 │   ├── orchestrator/     # Workflow management & remote agent connections
 │   ├── researcher/       # Information gathering (Google Search)
@@ -27,11 +28,10 @@ multi-agent/
 │   ├── adk_app.py        # Standardized ADK FastAPI wrapper
 │   ├── authenticated_httpx.py # Service-to-service auth utilities
 │   └── logging_config.py # Centralized logging configuration
-├── Makefile              # Development shortcuts
+├── Makefile              # Development and Azure deployment shortcuts
 ├── run_local.sh          # Local development startup script
-├── deploy.sh             # Cloud Run deployment script
-├── init.sh               # Project creation and billing setup script
-├── init2.sh              # Service enablement and environment initialization
+├── init.sh               # Google Cloud project creation script
+├── init2.sh              # Google Cloud service enablement and .env setup
 ├── set_adc.sh            # GCloud Application Default Credentials setup
 ├── set_env.sh            # Local .env generation script
 └── *_test.sh             # Agent-specific testing scripts
@@ -41,13 +41,13 @@ multi-agent/
 
 *   **Python 3.13+**
 *   **Node.js & npm**: For frontend development and builds.
-*   **pip** or **uv**: For dependency management.
-*   **Google Cloud SDK**: For authentication and deployment.
+*   **Azure CLI**: For ACA deployment (`az login`).
+*   **Google Cloud SDK**: For authentication and Gemini API access.
 *   **Google API Key**: Required for Gemini (unless using Vertex AI).
 
 ## Quick Start
 
-1.  **Initialize Environment:**
+1.  **Initialize Environment (Google Cloud):**
     ```bash
     # Create project and enable billing (if needed)
     ./init.sh
@@ -59,9 +59,6 @@ multi-agent/
     ```bash
     # This installs root, agents, app, and frontend dependencies
     make install
-    
-    # Optional: using uv
-    uv sync
     ```
 
 3.  **Run Locally:**
@@ -86,27 +83,36 @@ Or run the full suite:
 make test
 ```
 
-### Direct Agent Testing
-You can test an agent directly without the A2A protocol using a Python script. This is useful for debugging:
-```bash
-python test_researcher_direct.py
-```
-
 ## Deployment
 
-The system is designed to be deployed to **Google Cloud Run**.
+### Azure Container Apps (ACA)
+The system is configured for a serverless experience on Azure, with each agent as an independent Container App.
 
-1.  **Configure Environment:**
-    Set `GOOGLE_API_KEY` or ensure Vertex AI is enabled.
-    Set `GENAI_MODEL` to `gemini-2.5-flash` (recommended).
-
-2.  **Run Deployment Script:**
+1.  **Login to Azure:**
     ```bash
-    ./deploy.sh
+    az login
     ```
+
+2.  **Deploy all services:**
+    ```bash
+    make deploy-aca
+    ```
+    This script handles Resource Group creation, ACR setup, image building, and ACA deployment.
+
+3.  **Check Status:**
+    ```bash
+    make status-aca
+    ```
+
+4.  **Get Public Endpoint:**
+    ```bash
+    make endpoint-aca
+    ```
+
+### Google Cloud Run
+While optimized for ACA, the microservices remain compatible with Cloud Run.
 
 ## Recommended Models
 
-*   **Primary:** `gemini-2.5-flash` (Recommended) for superior reasoning, tool-calling accuracy, and cost-effectiveness.
-*   **Alternative:** `gemini-2.5-pro` for tasks requiring even deeper reasoning or complex instruction following.
-*   **Note:** Do not use models less than 2.5 (e.g., 2.0 Flash) as they are deprecated.
+*   **Primary:** `gemini-2.5-flash` (Recommended) for superior reasoning and tool-calling accuracy.
+*   **Note:** Do not use models less than 2.5 as they are deprecated.

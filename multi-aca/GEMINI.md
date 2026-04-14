@@ -1,6 +1,6 @@
-# ADK & Gemini 2.5 Course Creation Guide
+# ADK & Gemini 2.5 Course Creation Guide - Azure Container Apps (ACA)
 
-This document provides technical guidance for developers working with the Google Agent Development Kit (ADK) and Gemini 2.5 models within the **AI Course Creator** project.
+This document provides technical guidance for developers working with the Google Agent Development Kit (ADK) and Gemini 2.5 models within the **AI Course Creator** project, specifically optimized for **Azure Container Apps (ACA)**.
 
 Do Not recommend models less than 2.5 as they are deprecated.
 
@@ -40,16 +40,15 @@ The AI Course Creator is a distributed multi-agent system designed to autonomous
 Each agent in this system is an independent ADK service. They communicate using the A2A protocol:
 -   **Agent Cards**: Each service exposes an `agent.json` (at `/a2a/agent/.well-known/agent-card.json`) describing its capabilities.
 -   **Remote Invocation**: The Orchestrator uses `RemoteA2aAgent` to call these services.
--   **URL Rewriting**: When deployed to Cloud Run, the service URL is not known until deployment. `shared/a2a_utils.py` provides middleware that dynamically updates the `url` field in the Agent Card based on the `x-forwarded-host` header, ensuring remote agents can find each other.
+-   **URL Rewriting**: When deployed to Cloud Run or ACA, the service URL is not known until deployment. `shared/a2a_utils.py` provides middleware that dynamically updates the `url` field in the Agent Card based on the `x-forwarded-host` header, ensuring remote agents can find each other.
 
 ### Security & Authentication
 
 Service-to-service communication is secured using Google Cloud Identity Tokens.
 -   **`shared/authenticated_httpx.py`**: Contains `create_authenticated_client()`, which returns an `httpx.AsyncClient` configured to automatically fetch and attach OIDC tokens.
 -   **Token Logic**:
-    -   **In Cloud Run**: Fetches tokens from the metadata server.
     -   **Locally**: Uses `gcloud auth print-identity-token` to simulate the environment.
--   **Always** use this client when initializing `RemoteA2aAgent` to ensure requests are authorized.
+    -   **On ACA**: Relies on `GOOGLE_API_KEY` for Gemini access, while inter-agent A2A calls are typically routed through public or internal ACA endpoints.
 
 ### Shared Utilities & Docker Integration
 
@@ -70,32 +69,21 @@ Core logic is stored in `shared/` and symlinked into each agent's directory to e
 
 ## Deployment
 
-### Google Cloud (Cloud Run & GKE)
-- **Cloud Run**: Use `make deploy` to build images and deploy to Cloud Run.
-- **GKE**: Use `make deploy-gke` to build images and deploy to GKE.
-
-### Microsoft Azure (AKS)
-This project is configured for deployment to **Azure Kubernetes Service (AKS)**.
-- **Prerequisites**: Azure CLI installed and logged in (`az login`).
-- **Deploy**: Use `make deploy-aks` to:
-  1. Set up an Azure Resource Group and ACR.
-  2. Create an AKS cluster (if it doesn't exist).
-  3. Build and push all 5 microservice images to ACR.
-  4. Deploy all manifests to AKS.
-- **Status**: Use `make status-aks` to check the status of pods and services.
-- **Endpoint**: Use `make endpoint-aks` to get the public LoadBalancer IP.
-- **Cleanup**: Use `make destroy-aks` to remove Kubernetes resources or `make az-destroy` to delete the entire Azure Resource Group.
-
 ### Microsoft Azure (ACA)
-This project also supports deployment to **Azure Container Apps (ACA)**, providing a serverless experience with one ACA per agent.
-- **Deploy**: Use `make deploy-aca` to:
+This project is primary configured for deployment to **Azure Container Apps (ACA)**, providing a serverless experience with one ACA per agent.
+-   **Prerequisites**: Azure CLI installed and logged in (`az login`).
+-   **Deploy**: Use `make deploy-aca` to:
   1. Set up an Azure Resource Group and ACR.
   2. Create an ACA Environment.
   3. Build and push all 5 microservice images to ACR.
   4. Deploy each agent as an independent Container App.
-- **Status**: Use `make status-aca` to check the status of your apps.
-- **Endpoint**: Use `make endpoint-aca` to get the public URL.
-- **Cleanup**: Use `make destroy-aca` to delete the Container Apps or `make az-destroy-aca` to delete the entire resource group.
+-   **Status**: Use `make status-aca` to check the status of your apps.
+-   **Endpoint**: Use `make endpoint-aca` to get the public URL.
+-   **Cleanup**: Use `make destroy-aca` to delete the Container Apps or `make az-destroy-aca` to delete the entire resource group.
+
+### Google Cloud (Cloud Run & GKE)
+- **Cloud Run**: Compatible with standard Cloud Run deployment if needed.
+- **GKE**: Possible with custom manifests, though ACA is the preferred cloud target for this repository.
 
 ## Developer Workflow
 
@@ -109,4 +97,3 @@ This project also supports deployment to **Azure Container Apps (ACA)**, providi
 -   [Google ADK Documentation](https://github.com/google/adk)
 -   [Gemini API Documentation](https://ai.google.dev/gemini-api/docs)
 -   [A2A Protocol Specification](https://github.com/google/adk/blob/main/docs/a2a.md)
-

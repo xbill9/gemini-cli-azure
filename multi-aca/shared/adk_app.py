@@ -127,6 +127,10 @@ def main(
             extra_plugins=extra_plugins,
         )
 
+        @app.get("/health")
+        async def health():
+            return {"status": "ok"}
+
         if a2a:
             app.add_middleware(BaseHTTPMiddleware, dispatch=a2a_card_dispatch)
 

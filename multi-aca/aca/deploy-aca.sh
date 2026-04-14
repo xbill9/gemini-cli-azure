@@ -64,19 +64,12 @@ fi
 deploy_aca() {
     local name=$1
     local image="${ACR_LOGIN_SERVER}/${name}:${IMAGE_TAG}"
-    local target_port=8080
-    
-    # Handle optional port as second argument
-    if [[ "$2" =~ ^[0-9]+$ ]]; then
-        target_port=$2
-        shift 2
-    else
-        shift 1
-    fi
+    local target_port=${2:-8000}
+    shift $(( $# > 1 ? 2 : 1 ))
     
     local env_vars="$@"
 
-    echo >&2 "Deploying $name to ACA..."
+    echo >&2 "Deploying $name to ACA on port $target_port..."
     az containerapp create \
         --name "$name" \
         --resource-group "$AZ_RESOURCE_GROUP" \
@@ -86,20 +79,20 @@ deploy_aca() {
         --ingress external \
         --registry-server "$ACR_LOGIN_SERVER" \
         --secrets "gemini-key=$GEMINI_API_KEY" \
-        --env-vars "GOOGLE_API_KEY=secretref:gemini-key" $env_vars \
+        --env-vars "GOOGLE_API_KEY=secretref:gemini-key" "BYPASS_AUTH=true" $env_vars \
         --query "properties.configuration.ingress.fqdn" -o tsv
 }
 
-RESEARCH_FQDN=$(deploy_aca "researcher")
-JUDGE_FQDN=$(deploy_aca "judge")
-CONTENT_FQDN=$(deploy_aca "content-builder")
+RESEARCH_FQDN=$(deploy_aca "researcher" 8000)
+JUDGE_FQDN=$(deploy_aca "judge" 8000)
+CONTENT_FQDN=$(deploy_aca "content-builder" 8000)
 
 echo "Researcher FQDN: $RESEARCH_FQDN"
 echo "Judge FQDN:      $JUDGE_FQDN"
 echo "Content Builder FQDN: $CONTENT_FQDN"
 
 # 6. Deploy Orchestrator
-ORCHESTRATOR_FQDN=$(deploy_aca "orchestrator" 8080 \
+ORCHESTRATOR_FQDN=$(deploy_aca "orchestrator" 8000 \
     "RESEARCHER_AGENT_CARD_URL=https://$RESEARCH_FQDN/a2a/researcher/.well-known/agent-card.json" \
     "JUDGE_AGENT_CARD_URL=https://$JUDGE_FQDN/a2a/judge/.well-known/agent-card.json" \
     "CONTENT_BUILDER_AGENT_CARD_URL=https://$CONTENT_FQDN/a2a/content_builder/.well-known/agent-card.json")
