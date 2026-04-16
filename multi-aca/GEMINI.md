@@ -72,7 +72,7 @@ Core logic is stored in `shared/` and symlinked into each agent's directory to e
 ### Microsoft Azure (ACA)
 This project is primary configured for deployment to **Azure Container Apps (ACA)**, providing a serverless experience with one ACA per agent.
 -   **Prerequisites**: Azure CLI installed and logged in (`az login`).
--   **Deploy**: Use `make deploy-aca` to:
+-   **Deploy**: Use `make deploy` to:
   1. Set up an Azure Resource Group and ACR.
   2. Create an ACA Environment.
   3. Build and push all 5 microservice images to ACR.

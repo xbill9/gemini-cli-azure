@@ -95,7 +95,7 @@ The system is configured for a serverless experience on Azure, with each agent a
 
 2.  **Deploy all services:**
     ```bash
-    make deploy-aca
+    make deploy
     ```
     This script handles Resource Group creation, ACR setup, image building, and ACA deployment.
 

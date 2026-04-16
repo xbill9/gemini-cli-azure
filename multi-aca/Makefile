@@ -11,7 +11,7 @@ export GOOGLE_GENAI_USE_VERTEXAI = False
 export LOG_LEVEL = DEBUG
 export GENAI_MODEL = gemini-2.5-flash
 
-.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aca deploy-aca destroy-aca status-aca endpoint-aca clean help az-destroy-aca aca-status check-local
+.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aca deploy deploy-aca destroy-aca status-aca status endpoint-aca clean help az-destroy-aca aca-status check-local
 
 help:
 	@echo "Available commands:"
@@ -20,6 +20,7 @@ help:
 	@echo "  stop                  - Stop all local services (alias for stop-local)"
 	@echo "  run                   - Start all services locally (alias for start-local)"
 	@echo "  local                 - Show local service URLs"
+	@echo "  status                - Show status of local services"
 	@echo "  start-local           - Start all local services in background"
 	@echo "  stop-local            - Stop all local processes"
 	@echo "  test                  - Run all tests (pytest)"
@@ -28,6 +29,7 @@ help:
 	@echo "  test-orchestrator     - Test the Orchestrator logic"
 	@echo "  test-e2e-aca          - Run ACA E2E test (Full Flow)"
 	@echo "  lint                  - Run linting checks (ruff)"
+	@echo "  deploy                - Deploy all services to Azure Container Apps (ACA)"
 	@echo "  deploy-aca            - Deploy all services to Azure Container Apps (ACA)"
 	@echo "  destroy-aca           - Delete ACA resources"
 	@echo "  status-aca            - Show ACA status"
@@ -72,32 +74,32 @@ restart-local: start-local
 stop: stop-local
 
 check-frontend:
-	@if [ ! -d "app/dist" ]; then 
-		echo "Frontend build missing. Building frontend..."; 
-		$(MAKE) frontend; 
+	@if [ ! -d "app/dist" ]; then \
+		echo "Frontend build missing. Building frontend..."; \
+		$(MAKE) frontend; \
 	fi
 
 researcher-local:
 	@echo "Starting Researcher agent locally on port 8001..."
-	@/bin/bash -c "source .env 2>/dev/null || true; 
+	@/bin/bash -c "source .env 2>/dev/null || true; \
 	$(PYTHON_CMD) -m shared.adk_app --host 0.0.0.0 --port 8001 --a2a agents/researcher"
 
 judge-local:
 	@echo "Starting Judge agent locally on port 8002..."
-	@/bin/bash -c "source .env 2>/dev/null || true; 
+	@/bin/bash -c "source .env 2>/dev/null || true; \
 	$(PYTHON_CMD) -m shared.adk_app --host 0.0.0.0 --port 8002 --a2a agents/judge"
 
 content-builder-local:
 	@echo "Starting Content Builder agent locally on port 8003..."
-	@/bin/bash -c "source .env 2>/dev/null || true; 
+	@/bin/bash -c "source .env 2>/dev/null || true; \
 	$(PYTHON_CMD) -m shared.adk_app --host 0.0.0.0 --port 8003 --a2a agents/content_builder"
 
 orchestrator-local:
 	@echo "Starting Orchestrator agent locally on port 8004..."
-	@/bin/bash -c "source .env 2>/dev/null || true; 
-	export RESEARCHER_AGENT_CARD_URL=http://localhost:8001/a2a/researcher/.well-known/agent-card.json; 
-	export JUDGE_AGENT_CARD_URL=http://localhost:8002/a2a/judge/.well-known/agent-card.json; 
-	export CONTENT_BUILDER_AGENT_CARD_URL=http://localhost:8003/a2a/content_builder/.well-known/agent-card.json; 
+	@/bin/bash -c "source .env 2>/dev/null || true; \
+	export RESEARCHER_AGENT_CARD_URL=http://localhost:8001/a2a/researcher/.well-known/agent-card.json; \
+	export JUDGE_AGENT_CARD_URL=http://localhost:8002/a2a/judge/.well-known/agent-card.json; \
+	export CONTENT_BUILDER_AGENT_CARD_URL=http://localhost:8003/a2a/content_builder/.well-known/agent-card.json; \
 	$(PYTHON_CMD) -m shared.adk_app --host 0.0.0.0 --port 8004 agents/orchestrator"
 
 agents-local: stop-local
@@ -127,10 +129,10 @@ stop-local:
 
 backend-local:
 	@echo "Starting App Backend locally on port 8000..."
-	@/bin/bash -c "source .env 2>/dev/null || true; 
-	export AGENT_SERVER_URL=http://localhost:8004; 
-	export AGENT_NAME=orchestrator; 
-	export PORT=8000; 
+	@/bin/bash -c "source .env 2>/dev/null || true; \
+	export AGENT_SERVER_URL=http://localhost:8004; \
+	export AGENT_NAME=orchestrator; \
+	export PORT=8000; \
 	cd app && $(PYTHON_CMD) main.py"
 
 frontend-local:
@@ -158,6 +160,8 @@ test-orchestrator:
 test-content-builder:
 	python agents/content_builder/tests/test_agent.py
 
+deploy: deploy-aca
+
 deploy-aca:
 	./aca/deploy-aca.sh
 
@@ -165,15 +169,18 @@ destroy-aca:
 	./aca/destroy-aca.sh
 
 az-destroy-aca:
-	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-aca"}; 
-	echo "Destroying Azure Resource Group $$AZ_DEFAULTS_GROUP..."; 
-	az group delete --name "$$AZ_DEFAULTS_GROUP" --yes --no-wait; 
+	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-aca"}; \
+	echo "Destroying Azure Resource Group $$AZ_DEFAULTS_GROUP..."; \
+	echo "Resource Group name used: $$AZ_DEFAULTS_GROUP"; \
+	az group delete --name "$$AZ_DEFAULTS_GROUP" --yes --no-wait; \
 	echo "Resource Group deletion initiated."
 
 status-aca:
 	./aca/status-aca.sh
 
 aca-status: status-aca
+
+status: check-local
 
 local:
 	@echo "--- Local Service URLs ---"
