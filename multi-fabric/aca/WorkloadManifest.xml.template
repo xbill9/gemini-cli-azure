@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WorkloadManifest
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/fabric/2023/11/workload-manifest">
+    
+    <WorkloadName>AI_Course_Creator</WorkloadName>
+    <DisplayName>AI Course Creator (Distributed Agents)</DisplayName>
+    <Description>Multi-agent system for autonomous course research and generation.</Description>
+    
+    <WorkloadEndpoint>https://{{APP_FQDN}}</WorkloadEndpoint>
+    
+    <Items>
+        <ItemType>
+            <TypeName>CourseCreatorItem</TypeName>
+            <DisplayName>Course Creator Project</DisplayName>
+            <Description>A container for AI-generated course content and research findings.</Description>
+        </ItemType>
+    </Items>
+
+    <CloudServiceConfiguration>
+        <Authentication>
+            <AppId>{{AZ_CLIENT_ID}}</AppId>
+            <ResourceUri>https://{{APP_FQDN}}</ResourceUri>
+        </Authentication>
+    </CloudServiceConfiguration>
+</WorkloadManifest>
