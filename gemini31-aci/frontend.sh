@@ -1,3 +1,3 @@
-cd $HOME/way-back-home/level_3_gemini/frontend
+cd $HOME/gemini-cli-azure/gemini31-aci/frontend
 npm install
 npm run build

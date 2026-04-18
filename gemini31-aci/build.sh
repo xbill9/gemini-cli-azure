@@ -1,4 +1,4 @@
-cd $HOME/way-back-home/level_3_gemini
+cd $HOME/gemini-cli-azure/gemini31-aci
 
 cat <<EOF > Dockerfile
 FROM node:20-slim as builder
@@ -51,5 +51,5 @@ export PROJECT_ID=$(cat ~/project_id.txt)
 export REGION=us-central1
 export SERVICE_NAME=biometric-scout
 export IMAGE_PATH=gcr.io/${PROJECT_ID}/${SERVICE_NAME}
-cd $HOME/way-back-home/level_3_gemini
+cd $HOME/gemini-cli-azure/gemini31-aci
 gcloud builds submit . --tag ${IMAGE_PATH}
