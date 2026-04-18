@@ -1,0 +1,62 @@
+apiVersion: '2021-10-01'
+location: eastus
+name: biometric-scout-aci-ssl
+properties:
+  containers:
+  - name: biometric-app
+    properties:
+      image: biometricacreastuspenguv1.azurecr.io/biometric-scout-image:latest
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1.5
+      ports:
+      - port: 8080
+      environmentVariables:
+      - name: GOOGLE_API_KEY
+        value: YOUR_GOOGLE_API_KEY
+      - name: MODEL_ID
+        value: gemini-3.1-flash-live-preview
+      - name: PORT
+        value: '8080'
+      - name: VIDEO_FPS
+        value: '2.0'
+      - name: HEARTBEAT_INTERVAL
+        value: '10.0'
+  - name: caddy-ssl
+    properties:
+      image: caddy:latest
+      command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+      resources:
+        requests:
+          cpu: 0.5
+          memoryInGb: 0.5
+      ports:
+      - port: 80
+      - port: 443
+      volumeMounts:
+      - name: caddy-config
+        mountPath: /etc/caddy
+      - name: caddy-data
+        mountPath: /data
+  osType: Linux
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: tcp
+      port: 80
+    - protocol: tcp
+      port: 443
+    dnsNameLabel: biometric-scout-ssl-pengu
+  imageRegistryCredentials:
+  - server: biometricacreastuspenguv1.azurecr.io
+    username: biometricacreastuspenguv1
+    password: YOUR_ACR_PASSWORD
+  volumes:
+  - name: caddy-config
+    emptyDir: {}
+  - name: caddy-data
+    azureFile:
+      shareName: caddy-data
+      storageAccountName: biometricstoragepenguv1
+      storageAccountKey: YOUR_STORAGE_ACCOUNT_KEY

@@ -2,10 +2,10 @@
 # Azure Container Instances Deployment Configuration for Gemini 3.1 Flash Live
 SERVICE_NAME="biometric-scout-aci"
 IMAGE_NAME="biometric-scout-image"
-RESOURCE_GROUP="aci"
-LOCATION="canadaeast"
+RESOURCE_GROUP="aci-east"
+LOCATION="eastus"
 # Unique ACR name based on hostname
-ACR_NAME="biometricacr$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)v3"
+ACR_NAME="biometricacreastus$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-5)v1"
 
 # Load Project ID and API Key from local files if they exist
 PROJECT_ID=$(cat ~/project_id.txt 2>/dev/null || echo "your-project-id") 
@@ -54,6 +54,7 @@ az container create \
     --image ${FULL_IMAGE_NAME} \
     --cpu 1 \
     --memory 1.5 \
+    --os-type Linux \
     --registry-login-server ${ACR_LOGIN_SERVER} \
     --registry-username ${ACR_USERNAME} \
     --registry-password ${ACR_PASSWORD} \

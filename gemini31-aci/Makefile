@@ -31,15 +31,15 @@ deploy:
 status: azure-status
 
 azure-status:
-	@az container show --name biometric-scout-aci --resource-group aci --query "{Name:name, State:instanceView.state, FQDN:ipAddress.fqdn, IP:ipAddress.ip}" --output table
+	@az container list --resource-group aci-east --query "[].{Name:name, State:provisioningState, FQDN:ipAddress.fqdn, IP:ipAddress.ip}" --output table
 
 az-destroy:
-	@echo "Destroying resource group: aci..."
-	@az group delete --name aci --yes --no-wait
+	@echo "Destroying resource group: aci-east..."
+	@az group delete --name aci-east --yes --no-wait
 	@echo "Deletion command sent successfully."
 
 endpoint:
-	@az container show --name biometric-scout-aci --resource-group aci --query "ipAddress.fqdn" -o tsv
+	@az container show --name biometric-scout-aci --resource-group aci-east --query "ipAddress.fqdn" -o tsv
 
 run:
 	. ./biosync.sh

@@ -1,0 +1,6 @@
+{
+    email xbill9@gmail.com
+}
+biometric-scout-ssl-pengu.eastus.azurecontainer.io {
+    reverse_proxy localhost:8080
+}
