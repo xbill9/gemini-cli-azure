@@ -11,33 +11,52 @@ export GOOGLE_GENAI_USE_VERTEXAI = False
 export LOG_LEVEL = DEBUG
 export GENAI_MODEL = gemini-2.5-flash
 
-.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aca e2e-test-aci deploy deploy-aca deploy-aci destroy-aca destroy-aci status-aca status-aci status endpoint-aca endpoint-aci clean help az-destroy-aca az-destroy-aci aca-status aci-status check-local
+# Azure Configuration
+AZ_LOCATION ?= westus2
+HOSTNAME_ID := $(shell hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
+AZ_ACR_NAME ?= adkacr$(HOSTNAME_ID)v2
+AZ_RESOURCE_GROUP_ACI ?= adk-rg-aci
+
+.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aci deploy deploy-aci destroy-aci status-aci status endpoint-aci endpoint az-status clean help az-destroy-aci aci-status check-local az-login acr-login acr-create
+
+az-login:
+	@echo "Logging in to Azure..."
+	@az login
+
+acr-login:
+	@echo "Logging in to Azure Container Registry..."
+	@az acr login --name $(AZ_ACR_NAME)
+
+acr-create:
+	@RG=$${RG:-$(AZ_RESOURCE_GROUP_ACI)}; \
+	echo "Ensuring Resource Group $$RG exists..." ; \
+	az group create --name "$$RG" --location $(AZ_LOCATION) -o table ; \
+	echo "Checking if ACR $(AZ_ACR_NAME) exists..." ; \
+	az acr show --name $(AZ_ACR_NAME) --resource-group "$$RG" > /dev/null 2>&1 || \
+		(echo "Creating ACR $(AZ_ACR_NAME)..." && \
+		az acr create --name $(AZ_ACR_NAME) --resource-group "$$RG" --sku Basic --admin-enabled true -o table)
 
 help:
 	@echo "Available commands:"
+	@echo "  --- Local Development ---"
 	@echo "  install               - Install all dependencies for root, agents, and app"
 	@echo "  start                 - Start all services locally (alias for start-local)"
 	@echo "  stop                  - Stop all local services (alias for stop-local)"
-	@echo "  run                   - Start all services locally (alias for start-local)"
-	@echo "  local                 - Show local service URLs"
+	@echo "  run                   - Start all services locally"
 	@echo "  status                - Show status of local services"
-	@echo "  start-local           - Start all local services in background"
-	@echo "  stop-local            - Stop all local processes"
+	@echo "  local                 - Show local service URLs"
 	@echo "  test                  - Run all tests (pytest)"
-	@echo "  test-researcher       - Test the Researcher agent directly"
-	@echo "  test-judge            - Test the Judge agent directly"
-	@echo "  test-orchestrator     - Test the Orchestrator logic"
-	@echo "  test-e2e-aci          - Run ACI E2E test (Full Flow)"
 	@echo "  lint                  - Run linting checks (ruff)"
-	@echo "  deploy                - Deploy all services to Azure Container Instances (ACI)"
+	@echo "  --- Azure ACI ---"
 	@echo "  deploy-aci            - Deploy all services to Azure Container Instances (ACI)"
 	@echo "  destroy-aci           - Delete ACI resources"
-	@echo "  status-aci            - Show ACI status"
-	@echo "  endpoint-aci          - Show ACI service endpoint"
-	@echo "  deploy-aca            - Deploy all services to Azure Container Apps (ACA)"
-	@echo "  destroy-aca           - Delete ACA resources"
-	@echo "  status-aca            - Show ACA status"
-	@echo "  endpoint-aca          - Show ACA service endpoint"
+	@echo "  status-aci            - Show ACI status (alias: az-status)"
+	@echo "  endpoint-aci          - Show ACI service endpoint (alias: endpoint)"
+	@echo "  test-e2e-aci          - Run ACI E2E test"
+	@echo "  --- Shared Azure ---"
+	@echo "  az-login              - Login to Azure CLI"
+	@echo "  acr-login             - Login to ACR"
+	@echo "  acr-create            - Create/Verify ACR and Resource Group"
 	@echo "  clean                 - Remove caches and logs"
 
 TEST_URL ?= http://localhost:8000
@@ -50,14 +69,6 @@ e2e-test:
 		--no-buffer \
 		|| (echo "E2E Test Failed: No valid response from $(TEST_URL)" && exit 1)
 	@echo "\nE2E Test Completed successfully!"
-
-e2e-test-aca:
-	@ACA_URL=$$(./aca/endpoint-aca.sh | grep "https://" | tr -d '\n'); \
-	if [ -z "$$ACA_URL" ]; then \
-		echo "ERROR: Could not find course-creator ACA service URL. Is it deployed?"; \
-		exit 1; \
-	fi; \
-	$(MAKE) e2e-test TEST_URL=$$ACA_URL
 
 e2e-test-aci:
 	@ACI_URL=$$(./aci/endpoint-aci.sh | grep "http://" | tr -d '\n'); \
@@ -177,6 +188,10 @@ deploy: deploy-aci
 deploy-aci:
 	./aci/deploy-aci.sh
 
+deploy-group-aci:
+	chmod +x aci/deploy-group.sh
+	./aci/deploy-group.sh
+
 destroy-aci:
 	./aci/destroy-aci.sh
 
@@ -194,24 +209,6 @@ aci-status: status-aci
 
 endpoint-aci:
 	./aci/endpoint-aci.sh
-
-deploy-aca:
-	./aca/deploy-aca.sh
-
-destroy-aca:
-	./aca/destroy-aca.sh
-
-az-destroy-aca:
-	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-aca"}; \
-	echo "Destroying Azure Resource Group $$AZ_DEFAULTS_GROUP..."; \
-	echo "Resource Group name used: $$AZ_DEFAULTS_GROUP"; \
-	az group delete --name "$$AZ_DEFAULTS_GROUP" --yes --no-wait; \
-	echo "Resource Group deletion initiated."
-
-status-aca:
-	./aca/status-aca.sh
-
-aca-status: status-aca
 
 status: check-local
 
@@ -232,9 +229,6 @@ check-local:
 	@echo "--- Process Status ---"
 	@ps aux | grep -E "[s]hared[.]adk_app|[m]ain[.]py|[v]ite" || echo "No matching processes found."
 
-endpoint-aca:
-	./aca/endpoint-aca.sh
-
 clean:
 	@echo "Cleaning up caches and temporary files..."
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -243,3 +237,7 @@ clean:
 	find . -type d -name ".adk" -exec rm -rf {} +
 	find . -type f -name "*.log" -delete
 	@echo "Clean completed."
+
+# Azure ACI Aliases
+az-status: status-aci
+endpoint: endpoint-aci

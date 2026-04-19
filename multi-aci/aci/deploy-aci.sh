@@ -9,7 +9,9 @@ AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-aci"}
 HOSTNAME_ID=$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)
 AZ_ACR_NAME=${AZ_ACR_NAME:-"adkacr${HOSTNAME_ID}"}
 IMAGE_TAG=${IMAGE_TAG:-"v$(date +%Y%m%d%H%M%S)"}
-GEMINI_API_KEY=$(cat ${HOME}/gemini.key 2>/dev/null || echo "")
+GOOGLE_API_KEY=${GOOGLE_API_KEY:-$(cat ${HOME}/gemini.key 2>/dev/null || echo "")}
+GENAI_MODEL=${GENAI_MODEL:-"gemini-2.5-flash"}
+LOG_LEVEL=${LOG_LEVEL:-"DEBUG"}
 
 ACR_LOGIN_SERVER="${AZ_ACR_NAME}.azurecr.io"
 
@@ -63,19 +65,26 @@ deploy_aci() {
     
     local env_vars="$@"
 
+    local log_analytics_args=""
+    if [ -n "$AZ_WORKSPACE_ID" ] && [ -n "$AZ_WORKSPACE_KEY" ]; then
+        echo >&2 "Configuring Log Analytics for $name..."
+        log_analytics_args="--log-analytics-workspace $AZ_WORKSPACE_ID --log-analytics-workspace-key $AZ_WORKSPACE_KEY"
+    fi
+
     echo >&2 "Deploying $name to ACI on port $target_port..."
     az container create \
         --name "$name" \
         --resource-group "$AZ_RESOURCE_GROUP" \
         --image "$image" \
-        --cpu 1 --memory 1.0 \
+        --cpu 1 --memory 1.5 \
         --ports "$target_port" \
         --dns-name-label "$dns_label" \
         --os-type Linux \
         --registry-login-server "$ACR_LOGIN_SERVER" \
         --registry-username "$ACR_USERNAME" \
         --registry-password "$ACR_PASSWORD" \
-        --environment-variables "GOOGLE_API_KEY=$GEMINI_API_KEY" "BYPASS_AUTH=true" $env_vars \
+        --environment-variables "GOOGLE_API_KEY=$GOOGLE_API_KEY" "GENAI_MODEL=$GENAI_MODEL" "LOG_LEVEL=$LOG_LEVEL" "BYPASS_AUTH=true" $env_vars \
+        $log_analytics_args \
         --query "ipAddress.fqdn" -o tsv
 }
 

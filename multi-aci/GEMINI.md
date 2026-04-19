@@ -1,6 +1,6 @@
-# ADK & Gemini 2.5 Course Creation Guide - Azure Container Instances (ACI) & Container Apps (ACA)
+# ADK & Gemini 2.5 Course Creation Guide - Azure Container Instances (ACI)
 
-This document provides technical guidance for developers working with the Google Agent Development Kit (ADK) and Gemini 2.5 models within the **AI Course Creator** project, specifically optimized for **Azure Container Instances (ACI)** and **Azure Container Apps (ACA)**.
+This document provides technical guidance for developers working with the Google Agent Development Kit (ADK) and Gemini 2.5 models within the **AI Course Creator** project, specifically optimized for **Azure Container Instances (ACI)**.
 
 Do Not recommend models less than 2.5 as they are deprecated.
 
@@ -40,7 +40,7 @@ The AI Course Creator is a distributed multi-agent system designed to autonomous
 Each agent in this system is an independent ADK service. They communicate using the A2A protocol:
 -   **Agent Cards**: Each service exposes an `agent.json` (at `/a2a/agent/.well-known/agent-card.json`) describing its capabilities.
 -   **Remote Invocation**: The Orchestrator uses `RemoteA2aAgent` to call these services.
--   **URL Rewriting**: When deployed to Cloud Run, ACA, or ACI, the service URL is not known until deployment. `shared/a2a_utils.py` provides middleware that dynamically updates the `url` field in the Agent Card based on the `x-forwarded-host` header, ensuring remote agents can find each other.
+-   **URL Rewriting**: When deployed to Cloud Run or ACI, the service URL is not known until deployment. `shared/a2a_utils.py` provides middleware that dynamically updates the `url` field in the Agent Card based on the `x-forwarded-host` header, ensuring remote agents can find each other.
 
 ### Security & Authentication
 
@@ -60,10 +60,10 @@ Core logic is stored in `shared/` and symlinked into each agent's directory to e
 
 ## Model Selection & Optimization
 
-*   **Primary Model:** `gemini-2.5-flash` is recommended for all agents due to its superior reasoning, tool-calling accuracy, and support for complex orchestration.
-*   **Alternative Model:** `gemini-2.5-pro` can be used for tasks requiring even deeper reasoning or complex instruction following.
-*   **Deprecation Policy:** Do not recommend models less than 2.5 (e.g., 2.0 flash or older) as they are deprecated.
-*   **Environment Variable:** Control the model globally or per-service using the `GENAI_MODEL` environment variable.
+*   **Primary Model:** `gemini-2.5-flash` is the recommended and mainstream model for all agents. It provides superior reasoning, tool-calling accuracy, and speed for complex orchestration.
+*   **Alternative Model:** `gemini-2.5-pro` can be used for tasks requiring even deeper reasoning or extreme instruction following.
+*   **Deprecation Policy:** Do not use models older than 2.5 (e.g., 2.0 flash or older) as they are deprecated.
+*   **Environment Variable:** Control the model globally using the `GENAI_MODEL` environment variable (default: `gemini-2.5-flash`).
 *   **Structured Output:** Always use Pydantic schemas (like `JudgeFeedback`) for agents that provide evaluation or data that must be parsed programmatically (e.g., by the `EscalationChecker`).
 *   **Context Management:** Use `LoopAgent`'s `max_iterations` (set to `2` in the orchestrator) to prevent infinite loops during the research phase.
 
@@ -72,25 +72,22 @@ Core logic is stored in `shared/` and symlinked into each agent's directory to e
 ### Microsoft Azure (ACI)
 This project is configured for deployment to **Azure Container Instances (ACI)**, providing a lightweight way to run containers.
 -   **Prerequisites**: Azure CLI installed and logged in (`az login`).
--   **Deploy**: Use `make deploy-aci` (or `make deploy`) to:
-  1. Set up an Azure Resource Group and ACR.
-  2. Build and push all 5 microservice images to ACR.
-  3. Deploy each agent as an independent Container Instance group.
+-   **Deployment Options**:
+    -   **Independent Containers**: Use `make deploy-aci` to deploy each agent as its own container group with a unique public FQDN.
+    -   **Multi-Container Group (Recommended)**: Use `make deploy-group-aci` to deploy all 5 microservices into a single **Azure Container Group**.
+-   **Why use Container Groups?**
+    -   **Shared Lifecycle**: All containers start and stop together.
+    -   **Shared Network**: Containers communicate via `localhost` on their respective ports (e.g., `http://localhost:8001`), significantly simplifying internal A2A configuration.
+    -   **Cost Efficiency**: Shared resources and a single public IP/DNS label for the entire stack.
 -   **Status**: Use `make status-aci` to check the status of your containers.
+-   **Logging**: Use `az container logs --name <container-name> --resource-group <resource-group>` to view logs. 
+-   **Log Analytics (Recommended)**: To enable persistent logs and advanced querying:
+    1. Create a Log Analytics Workspace in Azure.
+    2. Set `AZ_WORKSPACE_ID` and `AZ_WORKSPACE_KEY` environment variables before running `make deploy-aci` or `make deploy-group-aci`.
+    3. Logs will be available in the `ContainerInstanceLog_CL` table of your workspace.
+    4. For more details, refer to [Azure Monitor logs for ACI](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-log-analytics).
 -   **Endpoint**: Use `make endpoint-aci` to get the public URL.
 -   **Cleanup**: Use `make destroy-aci` to delete the Container Instances or `make az-destroy-aci` to delete the entire resource group.
-
-### Microsoft Azure (ACA)
-This project is also configured for deployment to **Azure Container Apps (ACA)**.
--   **Prerequisites**: Azure CLI installed and logged in (`az login`).
--   **Deploy**: Use `make deploy-aca` to:
-  1. Set up an Azure Resource Group and ACR.
-  2. Create an ACA Environment.
-  3. Build and push all 5 microservice images to ACR.
-  4. Deploy each agent as an independent Container App.
--   **Status**: Use `make status-aca` to check the status of your apps.
--   **Endpoint**: Use `make endpoint-aca` to get the public URL.
--   **Cleanup**: Use `make destroy-aca` to delete the Container Apps or `make az-destroy-aca` to delete the entire resource group.
 
 ### Google Cloud (Cloud Run & GKE)
 - **Cloud Run**: Compatible with standard Cloud Run deployment if needed.

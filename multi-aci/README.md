@@ -1,6 +1,6 @@
-# AI Course Creator (Distributed Multi-Agent System) - Azure Container Apps
+# AI Course Creator (Distributed Multi-Agent System) - Azure Container Instances (ACI)
 
-A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure Container Apps (ACA)** while maintaining compatibility with local development and Google Cloud services.
+A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure Container Instances (ACI)** while maintaining compatibility with local development and Google Cloud services.
 
 ## Architecture
 
@@ -15,8 +15,8 @@ This project uses a distributed microservices architecture where each agent runs
 ## Project Structure
 
 ```
-multi-aca/
-├── aca/                  # Azure Container Apps deployment scripts
+multi-aci/
+├── aci/                  # Azure Container Instances deployment scripts
 ├── agents/
 │   ├── orchestrator/     # Workflow management & remote agent connections
 │   ├── researcher/       # Information gathering (Google Search)
@@ -41,7 +41,7 @@ multi-aca/
 
 *   **Python 3.13+**
 *   **Node.js & npm**: For frontend development and builds.
-*   **Azure CLI**: For ACA deployment (`az login`).
+*   **Azure CLI**: For ACI deployment (`az login`).
 *   **Google Cloud SDK**: For authentication and Gemini API access.
 *   **Google API Key**: Required for Gemini (unless using Vertex AI).
 
@@ -83,10 +83,15 @@ Or run the full suite:
 make test
 ```
 
+## Recommended Models
+
+*   **Primary:** `gemini-2.5-flash` is the mainstream and recommended model for all agents. It provides superior reasoning, tool-calling accuracy, and speed for complex orchestration.
+*   **Deprecation:** Do not use models older than 2.5 (e.g., 2.0 flash or older) as they are deprecated.
+
 ## Deployment
 
-### Azure Container Apps (ACA)
-The system is configured for a serverless experience on Azure, with each agent as an independent Container App.
+### Azure Container Instances (ACI)
+Lightweight way to run containers on Azure.
 
 1.  **Login to Azure:**
     ```bash
@@ -95,24 +100,16 @@ The system is configured for a serverless experience on Azure, with each agent a
 
 2.  **Deploy all services:**
     ```bash
-    make deploy
+    make deploy-aci
     ```
-    This script handles Resource Group creation, ACR setup, image building, and ACA deployment.
+    This script handles Resource Group creation, ACR setup, image building, and ACI deployment with 1.5GB memory per container.
 
 3.  **Check Status:**
     ```bash
-    make status-aca
+    make status-aci
     ```
 
 4.  **Get Public Endpoint:**
     ```bash
-    make endpoint-aca
+    make endpoint-aci
     ```
-
-### Google Cloud Run
-While optimized for ACA, the microservices remain compatible with Cloud Run.
-
-## Recommended Models
-
-*   **Primary:** `gemini-2.5-flash` (Recommended) for superior reasoning and tool-calling accuracy.
-*   **Note:** Do not use models less than 2.5 as they are deprecated.
