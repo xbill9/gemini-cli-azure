@@ -1,5 +1,5 @@
 
-cd $HOME/way-back-home/level_3_gemini
+cd $HOME/gemini-cli-azure/gemini31-appservice
 export GOOGLE_API_KEY=$GOOGLE_API_KEY
 export GEMINI_API_KEY=$GOOGLE_API_KEY
 export GEMINI_KEY=$GOOGLE_API_KEY

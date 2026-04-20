@@ -1,0 +1,22 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install uv for fast package management
+RUN pip install uv
+
+# Copy requirements from the root (since it contains common dependencies)
+COPY requirements.txt .
+RUN uv pip install --no-cache-dir --system -r requirements.txt
+
+# Copy the backend source code
+COPY backend/app/ .
+
+# Copy mock assets (for the initial audio greeting)
+# main.py looks for ../../mock/mock_audio.pcm relative to its location
+COPY mock/ /mock/
+
+# Expose the FastAPI port
+EXPOSE 8080
+
+CMD ["python", "main.py"]

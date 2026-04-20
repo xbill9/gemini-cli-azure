@@ -24,9 +24,16 @@ lint:
 frontend:
 	cd frontend && npm install && npm run build
 
+install:
+	pip install -r requirements.txt
+
 # Azure Deployment
 deploy:
 	./deploy.sh
+
+deploy-multi:
+	chmod +x deploy_multi.sh
+	./deploy_multi.sh
 
 status: azure-status
 

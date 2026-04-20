@@ -1,5 +1,5 @@
 
-cd $HOME/way-back-home/level_3_gemini/backend/app
+cd $HOME/gemini-cli-azure/gemini31-appservice/backend/app
 
 echo 'connect to local ADK CLI '
 echo

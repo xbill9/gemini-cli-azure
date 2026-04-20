@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      - GOOGLE_API_KEY=${GEMINI_API_KEY}
+      - MODEL_ID=gemini-3.1-flash-live-preview
+      - PORT=8080
+      - VIDEO_FPS=2.0
+      - HEARTBEAT_INTERVAL=10.0
+    restart: always

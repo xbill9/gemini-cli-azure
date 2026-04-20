@@ -112,7 +112,8 @@ ADK provides a bidirectional streaming interface over WebSockets.
 3.  **Local Testing:** Use `mock.sh` to test the frontend and backend orchestration without consuming Gemini API credits for every run.
 4.  **Automated Testing**: Run `make test`. Note that async tests (like `test_live_connection.py`) require the `@pytest.mark.anyio` marker and the `anyio` plugin.
 - **Deployment:** Ensure all environment variables (especially `MODEL_ID` and `GOOGLE_API_KEY`) are correctly set in the Azure App Service configuration.
-    - **Manual Deployment**: Use `make deploy` to deploy directly to Azure App Service.
+    - **Manual Deployment**: Use `make deploy` for single-container (stacked) deployment or `make deploy-multi` for multi-container deployment.
+    - **Multi-Container Architecture**: Uses Nginx for the frontend and FastAPI for the backend, orchestrated by a `docker-compose.yml` for Azure App Service.
     - **Resource Group**: Default is `aca`.
     - **Location**: Default is `canadaeast`.
     - **App Service Plan**: Default is `biometric-scout-plan`.
