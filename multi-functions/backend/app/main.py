@@ -66,7 +66,7 @@ from biometric_agent.agent import root_agent  # noqa: E402
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 PORT = 8080
-APP_NAME = "alpha-drone"
+APP_NAME = "biometric-scout"
 FRONTEND_DIST = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../../frontend/dist")
 )

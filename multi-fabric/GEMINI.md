@@ -69,16 +69,19 @@ Core logic is stored in `shared/` and symlinked into each agent's directory to e
 
 ## Deployment
 
-### Microsoft Azure (ACA)
-This project is primary configured for deployment to **Azure Container Apps (ACA)**, providing a serverless experience with one ACA per agent.
--   **Prerequisites**: Azure CLI installed and logged in (`az login`).
--   **Deploy**: Use `make deploy` to:
-  1. Set up an Azure Resource Group and ACR.
-  2. Create an ACA Environment.
-  3. Build and push all 5 microservice images to ACR.
-  4. Deploy each agent as an independent Container App.
--   **Status**: Use `make status-aca` to check the status of your apps.
--   **Endpoint**: Use `make endpoint-aca` to get the public URL.
+### Microsoft Azure (ACA & Fabric)
+This project is primary configured for deployment to **Azure Container Apps (ACA)**, providing a serverless experience with one ACA per agent. It also supports integration with **Microsoft Fabric** as a custom workload.
+
+-   **Prerequisites**: 
+    - Azure CLI installed and logged in (`az login`).
+    - Microsoft Fabric extension for Azure CLI (`make install-fabric-cli`).
+-   **Standard ACA Deploy**: Use `make deploy` to set up the environment and deploy all 5 microservice images to ACA.
+-   **Fabric Deployment**: Use `make deploy-fabric` to:
+    1. Perform a full ACA deployment.
+    2. Generate a `WorkloadManifest.xml` specifically for your deployed endpoint.
+    3. Provide instructions for registering the workload in the Fabric Admin Portal.
+-   **Status**: Use `make status-aca` or `make status-fabric` to check the status of your apps and Fabric capacity.
+-   **Endpoint**: Use `make endpoint-aca` or `make endpoint-fabric` to get the public URL.
 -   **Cleanup**: Use `make destroy-aca` to delete the Container Apps or `make az-destroy-aca` to delete the entire resource group.
 
 ### Google Cloud (Cloud Run & GKE)

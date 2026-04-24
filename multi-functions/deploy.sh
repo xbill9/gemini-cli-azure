@@ -1,12 +1,12 @@
 #!/bin/bash
 # Azure Container Apps Deployment Configuration for Gemini 3.1 Flash Live
-SERVICE_NAME="biometric-scout-app"
+SERVICE_NAME="container-app"
 IMAGE_NAME="biometric-scout-image"
-RESOURCE_GROUP="aca"
-LOCATION="canadaeast"
-CONTAINERAPP_ENV="biometric-scout-env"
+RESOURCE_GROUP="multi"
+LOCATION="westus"
+CONTAINERAPP_ENV="multi-env"
 # Unique ACR name based on hostname
-ACR_NAME="biometricacr$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)v3"
+ACR_NAME="containeracr$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-8)multi"
 
 # Load Project ID and API Key from local files if they exist
 PROJECT_ID=$(cat ~/project_id.txt 2>/dev/null || echo "your-project-id") 

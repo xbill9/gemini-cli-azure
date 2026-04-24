@@ -59,6 +59,8 @@ e2e-test-aca:
 	fi; \
 	$(MAKE) e2e-test TEST_URL=$$ACA_URL
 
+e2e-test-fabric: e2e-test-aca
+
 install:
 	@echo "Installing root dependencies..."
 	pip install -e ".[dev,lint]"
@@ -229,4 +231,5 @@ clean:
 	find . -type d -name ".ruff_cache" -exec rm -rf {} +
 	find . -type d -name ".adk" -exec rm -rf {} +
 	find . -type f -name "*.log" -delete
+	rm -f aca/WorkloadManifest.xml
 	@echo "Clean completed."

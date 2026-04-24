@@ -79,7 +79,7 @@ deploy_aca() {
         --ingress external \
         --registry-server "$ACR_LOGIN_SERVER" \
         --secrets "gemini-key=$GEMINI_API_KEY" \
-        --env-vars "GOOGLE_API_KEY=secretref:gemini-key" "BYPASS_AUTH=true" $env_vars \
+        --env-vars "GOOGLE_API_KEY=secretref:gemini-key" "BYPASS_AUTH=true" "PORT=$target_port" $env_vars \
         --query "properties.configuration.ingress.fqdn" -o tsv
 }
 

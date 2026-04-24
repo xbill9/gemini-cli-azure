@@ -1,6 +1,6 @@
 # Core Dependencies
-google-adk
-a2a-sdk
+google-adk==1.31.1
+a2a-sdk[server]==0.3.11
 fastapi
 pydantic
 uvicorn

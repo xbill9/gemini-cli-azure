@@ -69,7 +69,7 @@ from google.adk.agents import Agent
 root_agent = Agent(
     name="biometric_agent",
     model=MODEL_ID,
-    tools=[report_digit, trigger_system_error],
+    tools=[report_digit, trigger_system_error, trigger_heavy_metal_mode],
     instruction="..."
 )
 ```
@@ -99,23 +99,44 @@ The system intelligently selects the model ID based on the execution context:
 
 ADK provides a bidirectional streaming interface over WebSockets.
 
+#### Binary Protocol
+For maximum efficiency, the system uses a binary protocol for media streaming:
+-   **Audio (0x01)**: Raw PCM 16kHz audio data.
+-   **Video (0x02)**: JPEG encoded image frames (640x480).
+
+#### Configuration & Stimuli
+-   **Initial Config**: Upon connection, the server sends a `type: "config"` message specifying `video_fps` and `heartbeat_interval`.
 -   **Native Audio Config**: For `gemini-3.1-flash-live-preview`, `response_modalities` should be set to `["AUDIO"]`.
 -   **Proactivity Limitation**: **Gemini 3.1 Flash Live is not yet proactive.** It will not initiate speech or tool calls until it receives input (audio, video, or text).
 -   **Neural Handshake**: The backend sends a "Neural handshake" text stimulus immediately after connection to "wake up" the model.
 -   **Heartbeat Stimulus**: To prevent the model from idling during long periods of visual-only surveillance, a `CONTINUE_SURVEILLANCE` text stimulus is sent every 10 seconds if no other input is detected.
 -   **Manual Greeting**: The backend manually sends a pre-recorded PCM audio greeting (`mock_audio.pcm`) to the client as soon as the WebSocket connects.
 
+#### Neural Sync Status Messages
+The backend communicates detected events via JSON over WebSocket:
+-   `type: "match"`: Digit detected (`count`).
+-   `type: "system_error"`: Offensive gesture detected.
+-   `type: "heavy_metal"`: Devil's Horns detected.
+
 ## Developer Workflow
 
 1.  **Instruction Tuning:** Modify the `instruction` string in `agent.py` to refine the scanner's behavior and personality.
 2.  **Tool Expansion:** Add new functions to the `tools` list in `agent.py` to expand the system's capabilities.
-3.  **Local Testing:** Use `mock.sh` to test the frontend and backend orchestration without consuming Gemini API credits for every run.
+3.  **Local Testing (Mock Server):** Use `mock.sh` to test the frontend and backend orchestration. The mock server sends `{"mock": true}`, triggering a yellow banner in the UI to indicate simulation mode.
 4.  **Automated Testing**: Run `make test`. Note that async tests (like `test_live_connection.py`) require the `@pytest.mark.anyio` marker and the `anyio` plugin.
-5.  **Deployment:** Ensure all environment variables (especially `MODEL_ID` and `GOOGLE_API_KEY`) are correctly set in the Azure Container Apps configuration.
-    -   **Manual Deployment**: Use `make deploy` to deploy directly to Azure Container Apps (ACA).
-    -   **Resource Group**: Default is `aca`.
-    -   **Location**: Default is `canadaeast`.
-    -   **Clean Up**: Use `make az-destroy` to remove the resource group and all associated Azure resources.
+5.  **Deployment:** Ensure all environment variables (especially `MODEL_ID` and `GOOGLE_API_KEY`) are correctly set.
+    -   **Manual Deployment (Container Apps)**: Use `make deploy` to deploy directly to Azure Container Apps (ACA).
+        -   **Service Name**: `container-app`
+        -   **Resource Group**: Default is `multi-functions-east`.
+        -   **Location**: Default is `westus`.
+        -   **Clean Up**: Use `make az-destroy` to remove the resource group and all associated Azure resources.
+-   **Manual Deployment (Azure Functions)**: Use `make deploy-func` to deploy to Azure Functions (**on Container Apps**).
+        -   **Service Name**: `azure-functions`
+        -   **Resource Group**: Default is `multi-functions-east`.
+        -   **Location**: Default is `eastus`.
+        -   **Environment**: Uses a Container App Environment to support custom containers and WebSockets in a serverless model.
+        -   **Endpoint**: Use `make func-endpoint` to retrieve the URL.
+        -   **Clean Up**: Use `make func-destroy` to remove the resource group.
 
 ## Migrating from Gemini 2.5 Flash Live
 
@@ -137,28 +158,3 @@ Gemini 3.1 Flash Live Preview is optimized for low-latency, real-time dialogue.
 
 -   [Gemini 3.1 Flash Live Model Card](https://deepmind.google/models/model-cards/gemini-3-1-flash-live/)
 -   [Google ADK Documentation](https://github.com/google/adk) (Internal/Preview)
-
-
-The Gemini Live API enables real-time voice and video interactions with low latency. It supports bidirectional streaming of raw PCM audio via WebSockets. This API uses Native Audio for natural conversation, allowing interruptions, emotion detection, and tool use, making it suitable for voice agents. 
-Google Cloud Documentation
-Google Cloud Documentation
- +4
-Key Components for Live Audio Implementation
-AudioWorklet: Use Web Audio API's AudioWorklet to handle microphone input and audio playback in a separate thread, preventing UI issues.
-WebSocket Connection: Establish a persistent WSS connection to the Gemini Live API (gemini-live-2.5-flash-native-audio).
-Audio Format: PCM audio is sent/received as base64 encoded chunks, with 16kHz for input and 24kHz for output.
-Workflow:
-Capture: getUserMedia captures microphone data.
-Process: AudioWorkletProcessor resamples/buffers audio.
-Stream: Send base64 chunks via WebSocket.
-Respond: Receive audio PCM and use AudioWorklet to play it. 
-YouTube
-YouTube
- +4
-Implementation Resources
-Live API Examples: Explore GitHub examples for WebSockets and audio handling.
-Web Console Demo: Use the live-api-web-console as a reference hook for React applications.
-Best Practices: View the colab notebook for setting up the WebSocket connection. 
-Google Cloud Documentation
-Google Cloud Documentation
- +1

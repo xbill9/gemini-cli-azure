@@ -1,5 +1,9 @@
-echo Local URL
-echo http://127.0.0.1:8080/
+#!/bin/bash
+# Startup script for Biometric Security System
+echo "Starting Biometric Security System Backend..."
+echo "Local URL: http://127.0.0.1:8080/"
 
-cd $HOME/way-back-home/level_3_gemini/backend/
+# Use relative paths or dynamic current directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR/backend"
 python app/main.py

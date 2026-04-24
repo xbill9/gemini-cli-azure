@@ -85,26 +85,37 @@ make test
 
 ## Deployment
 
-### Azure Container Apps (ACA)
-The system is configured for a serverless experience on Azure, with each agent as an independent Container App.
+### Microsoft Azure (ACA & Fabric)
+The system is configured for a serverless experience on Azure, with each agent as an independent Container App. It also supports Microsoft Fabric integration.
 
 1.  **Login to Azure:**
     ```bash
     az login
     ```
 
-2.  **Deploy all services:**
+2.  **Install Fabric CLI Extensions:**
     ```bash
-    make deploy
+    make install-fabric-cli
     ```
-    This script handles Resource Group creation, ACR setup, image building, and ACA deployment.
 
-3.  **Check Status:**
+3.  **Deploy all services:**
+    ```bash
+    # Standard ACA deployment
+    make deploy
+    
+    # OR Deploy and prepare for Microsoft Fabric
+    make deploy-fabric
+    ```
+    The `deploy-fabric` script handles Resource Group creation, ACR setup, image building, ACA deployment, and generates a `WorkloadManifest.xml`.
+
+4.  **Check Status:**
     ```bash
     make status-aca
+    # For Fabric capacity status
+    make status-fabric
     ```
 
-4.  **Get Public Endpoint:**
+5.  **Get Public Endpoint:**
     ```bash
     make endpoint-aca
     ```

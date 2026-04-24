@@ -15,11 +15,21 @@
 import json
 import logging
 
-from a2a.utils.constants import (
-    AGENT_CARD_WELL_KNOWN_PATH,
-    EXTENDED_AGENT_CARD_PATH,
-    PREV_AGENT_CARD_WELL_KNOWN_PATH,
-)
+# Safe imports for A2A constants
+try:
+    from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
+except ImportError:
+    AGENT_CARD_WELL_KNOWN_PATH = "/.well-known/agent-card.json"
+
+try:
+    from a2a.utils.constants import PREV_AGENT_CARD_WELL_KNOWN_PATH
+except ImportError:
+    PREV_AGENT_CARD_WELL_KNOWN_PATH = "/a2a/agent/.well-known/agent-card.json"
+
+try:
+    from a2a.utils.constants import EXTENDED_AGENT_CARD_PATH
+except ImportError:
+    EXTENDED_AGENT_CARD_PATH = "/.well-known/extended-agent-card.json"
 
 # Import the consolidated client factory
 from starlette.datastructures import URL

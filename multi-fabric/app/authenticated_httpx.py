@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import os
 import subprocess
 from urllib.parse import urlparse
 
@@ -35,8 +36,13 @@ class _IdentityTokenAuth(httpx.Auth):
         parsed_url = urlparse(remote_service_url)
         self.root_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
         self.session = None
+        self.bypass_auth = os.getenv("BYPASS_AUTH", "false").lower() == "true"
 
     def auth_flow(self, request):
+        if self.bypass_auth:
+            yield request
+            return
+
         id_token = None
 
         # 1. Try to use existing session token

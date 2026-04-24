@@ -1,6 +1,6 @@
 # Makefile for Biometric Security System - Azure Container Apps & Functions
 
-.PHONY: clean test lint deploy run endpoint frontend mock adk azure-status az-destroy status deploy-func func-status func-destroy func-endpoint
+.PHONY: clean test lint deploy run endpoint frontend mock adk azure-status az-destroy status deploy-func func-status func-destroy func-endpoint e2e-test-functions
 
 clean:
 	@echo "Cleaning up logs, caches, and temporary files..."
@@ -26,6 +26,7 @@ frontend:
 
 # Azure Deployment (Container Apps)
 deploy:
+	chmod +x deploy.sh
 	./deploy.sh
 
 # Azure Deployment (Functions)
@@ -36,26 +37,36 @@ deploy-func:
 status: azure-status
 
 azure-status:
-	@az containerapp show --name biometric-scout-app --resource-group aca --query "{Name:name, State:properties.provisioningState, URL:properties.configuration.ingress.fqdn}" --output table 2>/dev/null || echo "Container App not found."
+	@az containerapp show --name container-app --resource-group multi-functions-east --query "{Name:name, State:properties.provisioningState, URL:properties.configuration.ingress.fqdn}" --output table 2>/dev/null || echo "Container App not found."
 
 func-status:
-	@az functionapp show --name biometric-scout-func --resource-group func-rg --query "{Name:name, State:properties.state, URL:defaultHostName}" --output table 2>/dev/null || echo "Function App not found."
+	@az functionapp show --name azure-functions --resource-group multi-functions-east --query "{Name:name, State:state, URL:defaultHostName}" --output table 2>/dev/null || echo "Function App not found."
 
 az-destroy:
-	@echo "Destroying resource group: aca..."
-	@az group delete --name aca --yes --no-wait
+	@echo "Destroying resource group: multi-functions-east..."
+	@az group delete --name multi-functions-east --yes --no-wait
 	@echo "Deletion command sent successfully."
 
 func-destroy:
-	@echo "Destroying resource group: func-rg..."
-	@az group delete --name func-rg --yes --no-wait
+	@echo "Destroying resource group: multi-functions-east..."
+	@az group delete --name multi-functions-east --yes --no-wait
 	@echo "Deletion command sent successfully."
 
 endpoint:
-	@az containerapp show --name biometric-scout-app --resource-group aca --query "properties.configuration.ingress.fqdn" -o tsv 2>/dev/null || echo "Container App not found."
+	@az functionapp show --name azure-functions --resource-group multi-functions-east --query "defaultHostName" -o tsv 2>/dev/null || echo "Function App not found."
 
 func-endpoint:
-	@az functionapp show --name biometric-scout-func --resource-group func-rg --query "defaultHostName" -o tsv 2>/dev/null || echo "Function App not found."
+	@az functionapp show --name azure-functions --resource-group multi-functions-east --query "defaultHostName" -o tsv 2>/dev/null || echo "Function App not found."
+
+e2e-test-functions:
+	@FUNC_HOST=$$(az functionapp show --name azure-functions --resource-group multi-functions-east --query "defaultHostName" -o tsv 2>/dev/null) && \
+	if [ -n "$$FUNC_HOST" ]; then \
+		echo "Running E2E test against: $$FUNC_HOST"; \
+		python3 test_e2e_func.py $$FUNC_HOST; \
+	else \
+		echo "Error: Function App not found or not deployed."; \
+		exit 1; \
+	fi
 
 run:
 	. ./biosync.sh
