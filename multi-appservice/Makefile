@@ -63,10 +63,12 @@ e2e-test-aca:
 e2e-test-as:
 	@AS_URL=$$(./appservice/endpoint-appservice.sh | grep "https://" | tr -d '\n'); \
 	if [ -z "$$AS_URL" ]; then \
-		echo "ERROR: Could not find course-creator App Service URL. Is it deployed?"; \
+		echo "ERROR: Could not find App Service URL. Is it deployed?"; \
 		exit 1; \
 	fi; \
 	$(MAKE) e2e-test TEST_URL=$$AS_URL
+
+e2e-test-appservice: e2e-test-as
 
 install:
 	@echo "Installing root dependencies..."

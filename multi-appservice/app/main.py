@@ -44,7 +44,24 @@ try:
 except Exception as e:
     logger.warning(f"Cloud Trace initialization skipped: {e}")
 
-app = FastAPI()
+from google.adk.cli import fast_api
+from pathlib import Path
+
+# Initialize ADK app which will host all agents in the same process
+agents_dir = str(Path(__file__).parent.parent / "agents")
+app = fast_api.get_fast_api_app(
+    agents_dir=agents_dir,
+    a2a=True,
+    web=True,
+)
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "AI Course Creator API with built-in Agents"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,22 +70,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(BaseHTTPMiddleware, dispatch=a2a_card_dispatch)
+# app.add_middleware(BaseHTTPMiddleware, dispatch=a2a_card_dispatch)
 
-agent_name = os.getenv("AGENT_NAME", None)
+# Use itself as the agent server by default if not set
+agent_name = os.getenv("AGENT_NAME", "orchestrator")
 agent_server_url = os.getenv("AGENT_SERVER_URL")
-if agent_server_url:
+if not agent_server_url:
+    port = os.getenv("PORT", "8080")
+    agent_server_url = f"http://127.0.0.1:{port}"
+else:
     agent_server_url = agent_server_url.rstrip("/")
 
-clients: dict[str, httpx.AsyncClient] = {}
+logger.info(f"Unified App: Hosting agents and using server '{agent_server_url}'")
 
+from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
+agent_url = f"{agent_server_url}/a2a/{agent_name}/.well-known/agent-card.json"
+agent = RemoteA2aAgent(
+    name=agent_name,
+    agent_card=agent_url,
+    httpx_client=create_authenticated_client(agent_url),
+)
+
+clients: dict[str, httpx.AsyncClient] = {}
 
 async def get_client(agent_server_origin: str) -> httpx.AsyncClient:
     global clients
     if agent_server_origin not in clients:
         clients[agent_server_origin] = create_authenticated_client(agent_server_origin)
     return clients[agent_server_origin]
-
 
 async def create_session(
     agent_server_origin: str, agent_name: str, user_id: str

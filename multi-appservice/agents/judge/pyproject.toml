@@ -2,11 +2,11 @@
 name = "judge-agent"
 version = "0.1.0"
 description = "Judge microservice agent"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "shared-utils",
-    "google-adk",
-    "a2a-sdk",
+    "google-adk==1.31.1",
+    "a2a-sdk==0.3.25",
     "fastapi",
     "uvicorn",
     "python-json-logger",

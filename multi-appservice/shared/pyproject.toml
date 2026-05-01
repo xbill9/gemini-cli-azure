@@ -2,13 +2,13 @@
 name = "shared-utils"
 version = "0.1.0"
 description = "Shared utilities for the multi-agent system"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
-    "a2a-sdk",
+    "a2a-sdk==0.3.25",
     "fastapi",
     "uvicorn",
     "click",
-    "google-adk",
+    "google-adk==1.31.1",
     "python-json-logger",
     "google-cloud-logging",
     "opentelemetry-exporter-gcp-trace",

@@ -9,9 +9,9 @@ from agents.researcher.agent import researcher
 
 
 async def main():
-    # Ensure API key is available
-    if not os.environ.get("GOOGLE_API_KEY"):
-        print("Error: GOOGLE_API_KEY not set")
+    # Ensure API key or Vertex AI is available
+    if not os.environ.get("GOOGLE_API_KEY") and not os.environ.get("GOOGLE_GENAI_USE_VERTEXAI") == "True":
+        print("Error: GOOGLE_API_KEY not set and Vertex AI not enabled")
         return
 
     session_service = InMemorySessionService()

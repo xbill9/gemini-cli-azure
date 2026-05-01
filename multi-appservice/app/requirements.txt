@@ -7,8 +7,8 @@ google-cloud-logging
 opentelemetry-exporter-gcp-trace
 opentelemetry-api
 opentelemetry-sdk
-google-adk
+google-adk==1.31.1
 google-auth
 pydantic
 python-json-logger
-a2a-sdk
+a2a-sdk==0.3.25

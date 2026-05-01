@@ -6,17 +6,17 @@ authors = [
     {name = "Your Name", email = "your@email.com"},
 ]
 dependencies = [
-    "google-adk",
+    "google-adk==1.31.1",
     "opentelemetry-exporter-gcp-trace",
     "google-cloud-logging",
     "fastapi",
     "uvicorn",
     "python-json-logger",
     "psycopg2-binary",
-    "a2a-sdk",
+    "a2a-sdk==0.3.25",
 ]
 
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 
 
 [dependency-groups]

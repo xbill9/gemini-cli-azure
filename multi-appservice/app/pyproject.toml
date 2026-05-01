@@ -2,7 +2,7 @@
 name = "course-creation-app"
 version = "0.1.0"
 description = "Course Creation Web App"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "uvicorn",
     "python-json-logger",
@@ -12,7 +12,7 @@ dependencies = [
     "google-genai",
     "google-cloud-logging",
     "opentelemetry-exporter-gcp-trace",
-    "google-adk",
+    "google-adk==1.31.1",
     "google-auth",
 ]
 

@@ -263,40 +263,47 @@ class ProgressAgent(BaseAgent):
         )
 
 
-# --- Remote Agents ---
+# --- Local Agents (In-Process) ---
+try:
+    from agents.researcher.agent import root_agent as researcher
+    from agents.judge.agent import root_agent as judge
+    from agents.content_builder.agent import root_agent as content_builder
+    logger.info("Using in-process agents for researcher, judge, and content_builder")
+except ImportError:
+    # Fallback to Remote for flexibility if needed, but primary is local
+    logger.warning("Failed to import local agents, falling back to RemoteA2aAgent")
+    researcher_url = os.environ.get(
+        "RESEARCHER_AGENT_CARD_URL",
+        "http://localhost:8001/a2a/researcher/.well-known/agent-card.json",
+    )
+    researcher = RemoteA2aAgent(
+        name="researcher",
+        agent_card=researcher_url,
+        description="Gathers information using Google Search.",
+        httpx_client=create_authenticated_client(researcher_url),
+    )
 
-researcher_url = os.environ.get(
-    "RESEARCHER_AGENT_CARD_URL",
-    "http://localhost:8001/a2a/researcher/.well-known/agent-card.json",
-)
-researcher = RemoteA2aAgent(
-    name="researcher",
-    agent_card=researcher_url,
-    description="Gathers information using Google Search.",
-    httpx_client=create_authenticated_client(researcher_url),
-)
+    judge_url = os.environ.get(
+        "JUDGE_AGENT_CARD_URL",
+        "http://localhost:8002/a2a/judge/.well-known/agent-card.json",
+    )
+    judge = RemoteA2aAgent(
+        name="judge",
+        agent_card=judge_url,
+        description="Evaluates research quality.",
+        httpx_client=create_authenticated_client(judge_url),
+    )
 
-judge_url = os.environ.get(
-    "JUDGE_AGENT_CARD_URL",
-    "http://localhost:8002/a2a/judge/.well-known/agent-card.json",
-)
-judge = RemoteA2aAgent(
-    name="judge",
-    agent_card=judge_url,
-    description="Evaluates research quality.",
-    httpx_client=create_authenticated_client(judge_url),
-)
-
-content_builder_url = os.environ.get(
-    "CONTENT_BUILDER_AGENT_CARD_URL",
-    "http://localhost:8003/a2a/content_builder/.well-known/agent-card.json",
-)
-content_builder = RemoteA2aAgent(
-    name="content_builder",
-    agent_card=content_builder_url,
-    description="Transforms research into a course module.",
-    httpx_client=create_authenticated_client(content_builder_url),
-)
+    content_builder_url = os.environ.get(
+        "CONTENT_BUILDER_AGENT_CARD_URL",
+        "http://localhost:8003/a2a/content_builder/.well-known/agent-card.json",
+    )
+    content_builder = RemoteA2aAgent(
+        name="content_builder",
+        agent_card=content_builder_url,
+        description="Transforms research into a course module.",
+        httpx_client=create_authenticated_client(content_builder_url),
+    )
 
 # --- Orchestration ---
 

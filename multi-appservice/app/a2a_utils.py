@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
 
-from a2a.utils.constants import (
-    AGENT_CARD_WELL_KNOWN_PATH,
-    EXTENDED_AGENT_CARD_PATH,
-    PREV_AGENT_CARD_WELL_KNOWN_PATH,
-)
+# Robust import of A2A constants
+try:
+    from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH, DEFAULT_RPC_URL
+except ImportError:
+    try:
+        from a2a.utils import AGENT_CARD_WELL_KNOWN_PATH, DEFAULT_RPC_URL
+    except ImportError:
+        # Fallback to defaults if imports fail
+        AGENT_CARD_WELL_KNOWN_PATH = "/.well-known/agent-card.json"
+        DEFAULT_RPC_URL = "/rpc"
 
-# Import the consolidated client factory
+# Optional constants that might be missing in older versions
+try:
+    from a2a.utils.constants import EXTENDED_AGENT_CARD_PATH
+except ImportError:
+    try:
+        from a2a.utils import EXTENDED_AGENT_CARD_PATH
+    except ImportError:
+        EXTENDED_AGENT_CARD_PATH = "/.well-known/agent-card-extended.json"
+
+try:
+    from a2a.utils.constants import PREV_AGENT_CARD_WELL_KNOWN_PATH
+except ImportError:
+    try:
+        from a2a.utils import PREV_AGENT_CARD_WELL_KNOWN_PATH
+    except ImportError:
+        PREV_AGENT_CARD_WELL_KNOWN_PATH = "/a2a/agent/.well-known/agent-card.json"
+
+
 from starlette.datastructures import URL
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.requests import Request as StarletteRequest
@@ -33,76 +54,52 @@ logger = logging.getLogger(__name__)
 async def a2a_card_dispatch(
     request: StarletteRequest, call_next: RequestResponseEndpoint
 ) -> Response:
-    """Handles requests for A2A Agent Cards.
+    """Middleware to dynamically update the agent card URL.
 
-    Ensures that the agent's internal URL matches the public-facing URL (protocol,
-    hostname, and port) from the request headers. This is critical for agents
-    behind proxies like Cloud Run or Load Balancers.
+    This ensures that the agent card always points to the correct external URL
+    of the service, which is necessary for A2A communication in environments
+    like Cloud Run or Azure Container Apps where the URL is assigned dynamically.
     """
-    response = await call_next(request)
-
     path = request.url.path
-    is_agent_card_request = response.status_code == 200 and (
+    if (
         path.endswith(AGENT_CARD_WELL_KNOWN_PATH)
-        or path.endswith(PREV_AGENT_CARD_WELL_KNOWN_PATH)
         or path.endswith(EXTENDED_AGENT_CARD_PATH)
-    )
+        or path.endswith(PREV_AGENT_CARD_WELL_KNOWN_PATH)
+    ):
+        response = await call_next(request)
+        if response.status_code == 200:
+            # We need to read the body, but it might be large (though agent cards are small)
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
 
-    if not is_agent_card_request:
-        return response
+            import json
 
-    # Extract and modify the card body
-    try:
-        body = await _get_response_body(response)
-        card = json.loads(body)
+            try:
+                card = json.loads(body.decode())
+                # Update the URL using the current request's host
+                forwarded_host = request.headers.get("x-forwarded-host")
+                forwarded_proto = request.headers.get("x-forwarded-proto", "https")
 
-        # Use request headers (x-forwarded-*) to determine the public URL
-        headers = request.headers
-        host = headers.get("x-forwarded-host", request.url.hostname)
-        scheme = headers.get("x-forwarded-proto", request.url.scheme or "http").lower()
-        port = headers.get("x-forwarded-port", request.url.port)
+                if forwarded_host:
+                    base_url = f"{forwarded_proto}://{forwarded_host}"
+                    card["url"] = f"{base_url}{DEFAULT_RPC_URL}"
+                    logger.debug(f"Updated agent card URL to: {card['url']}")
 
-        # Strip default ports for cleaner URLs
-        if port and (
-            (scheme == "http" and port == "80") or (scheme == "https" and port == "443")
-        ):
-            port = None
+                return Response(
+                    content=json.dumps(card),
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                    media_type=response.media_type,
+                )
+            except Exception as e:
+                logger.error(f"Failed to process agent card: {e}")
+                # Return original body if processing fails
+                return Response(
+                    content=body,
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                    media_type=response.media_type,
+                )
 
-        agent_url = URL(card["url"]).replace(
-            scheme=scheme,
-            hostname=host,
-            port=port,
-        )
-        card["url"] = str(agent_url)
-
-        # Reconstruct the response
-        response_headers = dict(response.headers)
-        response_headers.pop("content-length", None)  # Let Starlette recalculate
-
-        return Response(
-            json.dumps(card).encode(response.charset or "utf-8"),
-            media_type="application/json",
-            headers=response_headers,
-        )
-    except Exception as e:
-        logger.error(f"Failed to rewrite A2A agent card: {e}")
-        return response
-
-
-async def _get_response_body(response: Response) -> str:
-    """Helper to safely extract the response body from various Starlette response types."""
-    if hasattr(response, "body"):
-        body = response.body
-    elif hasattr(response, "body_iterator"):
-        body = b""
-        async for chunk in response.body_iterator:  # type: ignore
-            if isinstance(chunk, str):
-                chunk = chunk.encode(response.charset or "utf-8")
-            body += chunk
-    else:
-        return ""
-
-    if isinstance(body, memoryview):
-        body = body.tobytes()
-
-    return body.decode(response.charset or "utf-8")
+    return await call_next(request)
