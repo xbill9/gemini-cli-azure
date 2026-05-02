@@ -4,7 +4,7 @@
 set -e
 
 # Set common environment variables
-export PYTHONPATH=$PYTHONPATH:.:./shared:./app
+export PYTHONPATH=$PYTHONPATH:/app:/app/shared:/app/app
 export GOOGLE_GENAI_USE_VERTEXAI="False"
 export LOG_LEVEL=DEBUG
 export GENAI_MODEL=gemini-2.5-flash

@@ -264,18 +264,36 @@ class ProgressAgent(BaseAgent):
 
 
 # --- Local Agents (In-Process) ---
+def get_fallback_url(agent_name: str, default_port: int) -> str:
+    # In a unified container, all agents are on the same port (usually 8080)
+    # If we are on App Service, PORT is likely 8080.
+    # We prioritize 8080 over the microservice default ports (8001-8003) 
+    # if we are in this "unified fallback" code path.
+    port = os.environ.get("PORT", os.environ.get("WEBSITES_PORT", "8080"))
+    return f"http://localhost:{port}/a2a/{agent_name}/.well-known/agent-card.json"
+
 try:
-    from agents.researcher.agent import root_agent as researcher
-    from agents.judge.agent import root_agent as judge
-    from agents.content_builder.agent import root_agent as content_builder
+    # Try relative imports first
+    logger.info("Attempting to import local agents...")
+    try:
+        from agents.researcher.agent import root_agent as researcher
+        from agents.judge.agent import root_agent as judge
+        from agents.content_builder.agent import root_agent as content_builder
+        logger.info("Successfully imported local agents via 'agents.*'")
+    except ImportError as e1:
+        logger.info(f"Failed 'agents.*' imports: {e1}. Trying absolute imports...")
+        # Try absolute imports if installed as packages
+        from researcher.agent import root_agent as researcher
+        from judge.agent import root_agent as judge
+        from content_builder.agent import root_agent as content_builder
+        logger.info("Successfully imported local agents via absolute imports")
+    
     logger.info("Using in-process agents for researcher, judge, and content_builder")
-except ImportError:
-    # Fallback to Remote for flexibility if needed, but primary is local
-    logger.warning("Failed to import local agents, falling back to RemoteA2aAgent")
-    researcher_url = os.environ.get(
-        "RESEARCHER_AGENT_CARD_URL",
-        "http://localhost:8001/a2a/researcher/.well-known/agent-card.json",
-    )
+except ImportError as e:
+    # Fallback to Remote for flexibility if needed
+    logger.warning(f"Failed to import local agents ({e}), falling back to RemoteA2aAgent")
+    
+    researcher_url = os.environ.get("RESEARCHER_AGENT_CARD_URL", get_fallback_url("researcher", 8001))
     researcher = RemoteA2aAgent(
         name="researcher",
         agent_card=researcher_url,
@@ -283,10 +301,7 @@ except ImportError:
         httpx_client=create_authenticated_client(researcher_url),
     )
 
-    judge_url = os.environ.get(
-        "JUDGE_AGENT_CARD_URL",
-        "http://localhost:8002/a2a/judge/.well-known/agent-card.json",
-    )
+    judge_url = os.environ.get("JUDGE_AGENT_CARD_URL", get_fallback_url("judge", 8002))
     judge = RemoteA2aAgent(
         name="judge",
         agent_card=judge_url,
@@ -294,10 +309,7 @@ except ImportError:
         httpx_client=create_authenticated_client(judge_url),
     )
 
-    content_builder_url = os.environ.get(
-        "CONTENT_BUILDER_AGENT_CARD_URL",
-        "http://localhost:8003/a2a/content_builder/.well-known/agent-card.json",
-    )
+    content_builder_url = os.environ.get("CONTENT_BUILDER_AGENT_CARD_URL", get_fallback_url("content_builder", 8003))
     content_builder = RemoteA2aAgent(
         name="content_builder",
         agent_card=content_builder_url,

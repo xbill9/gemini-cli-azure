@@ -11,7 +11,7 @@ export GOOGLE_GENAI_USE_VERTEXAI = False
 export LOG_LEVEL = DEBUG
 export GENAI_MODEL = gemini-2.5-flash
 
-.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aca e2e-test-as deploy deploy-aca deploy-as destroy-aca destroy-as status-aca status-as status endpoint-aca endpoint-as clean help az-destroy-aca az-destroy-as aca-status as-status check-local
+.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aca e2e-test-as deploy deploy-aca deploy-as deploy-single deploy-aca-single deploy-as-single destroy-aca destroy-as status-aca status-as status endpoint-aca endpoint-as clean help az-destroy-aca az-destroy-as aca-status as-status check-local
 
 help:
 	@echo "Available commands:"
@@ -33,6 +33,9 @@ help:
 	@echo "  deploy                - Deploy all services (defaults to ACA)"
 	@echo "  deploy-aca            - Deploy all services to Azure Container Apps (ACA)"
 	@echo "  deploy-as             - Deploy all services to Azure App Service"
+	@echo "  deploy-single         - Deploy all-in-one container (defaults to ACA)"
+	@echo "  deploy-aca-single     - Deploy all-in-one container to ACA"
+	@echo "  deploy-as-single      - Deploy all-in-one container to App Service"
 	@echo "  destroy-aca           - Delete ACA resources"
 	@echo "  destroy-as            - Delete App Service resources"
 	@echo "  status-aca            - Show ACA status"
@@ -59,6 +62,15 @@ e2e-test-aca:
 		exit 1; \
 	fi; \
 	$(MAKE) e2e-test TEST_URL=$$ACA_URL
+
+e2e-test-aca-single:
+	@HOSTNAME_ID=$$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10); \
+	ACA_URL=$$(az containerapp show --name "adk-all-in-one-$$HOSTNAME_ID" --resource-group "adk-rg-aca" --query "properties.configuration.ingress.fqdn" -o tsv | grep "." || echo ""); \
+	if [ -z "$$ACA_URL" ]; then \
+		echo "ERROR: Could not find all-in-one ACA service URL. Is it deployed?"; \
+		exit 1; \
+	fi; \
+	$(MAKE) e2e-test TEST_URL=https://$$ACA_URL
 
 e2e-test-as:
 	@AS_URL=$$(./appservice/endpoint-appservice.sh | grep "https://" | tr -d '\n'); \
@@ -175,13 +187,21 @@ test-orchestrator:
 test-content-builder:
 	python agents/content_builder/tests/test_agent.py
 
-deploy: deploy-aca
+deploy: deploy-as
 
 deploy-aca:
 	./aca/deploy-aca.sh
 
 deploy-as:
 	./appservice/deploy-appservice.sh
+
+deploy-single: deploy-as-single
+
+deploy-aca-single:
+	./aca/deploy-aca-single.sh
+
+deploy-as-single:
+	./single-container/deploy.sh
 
 destroy-aca:
 	./aca/destroy-aca.sh
