@@ -1,10 +1,10 @@
-# AI Course Creator (Distributed Multi-Agent System) - Azure Container Apps
+# AI Course Creator (Distributed Multi-Agent System) - Azure App Service
 
-A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure Container Apps (ACA)** while maintaining compatibility with local development and Google Cloud services.
+A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure App Service** as a single combined container.
 
 ## Architecture
 
-This project uses a distributed microservices architecture where each agent runs in its own container and communicates via the A2A protocol:
+This project uses a distributed microservices architecture where each agent runs in its own process and communicates via the A2A protocol:
 
 *   **Orchestrator Service (`agents/orchestrator`):** Manages the overall course creation pipeline using **`SequentialAgent`**. It implements an iterative Research-Judge loop with **`LoopAgent`** (max 2 iterations). Key components include **`TopicCapturer`**, **`EscalationChecker`**, **`ResearchGuard`**, **`StateCapturer`**, and **`ProgressAgent`** for status updates.
 *   **Researcher Service (`agents/researcher`):** Gathers detailed topic information using the `google_search` tool.
@@ -15,8 +15,8 @@ This project uses a distributed microservices architecture where each agent runs
 ## Project Structure
 
 ```
-multi-aca/
-├── aca/                  # Azure Container Apps deployment scripts
+multi-appservice/
+├── single-container/     # Deployment scripts and Dockerfile for the all-in-one App Service setup
 ├── agents/
 │   ├── orchestrator/     # Workflow management & remote agent connections
 │   ├── researcher/       # Information gathering (Google Search)
@@ -41,9 +41,20 @@ multi-aca/
 
 *   **Python 3.13+**
 *   **Node.js & npm**: For frontend development and builds.
-*   **Azure CLI**: For ACA deployment (`az login`).
+*   **Azure CLI**: For deployment (`az login`).
 *   **Google Cloud SDK**: For authentication and Gemini API access.
-*   **Google API Key**: Required for Gemini (unless using Vertex AI).
+*   **Google API Key**: Required for Gemini.
+
+### Local Service Ports
+
+Each service runs on a dedicated port during local development for clear isolation:
+
+*   **Web App (Frontend/Backend):** [http://localhost:8000](http://localhost:8000)
+*   **Researcher Agent:** [http://localhost:8001](http://localhost:8001)
+*   **Judge Agent:** [http://localhost:8002](http://localhost:8002)
+*   **Content Builder Agent:** [http://localhost:8003](http://localhost:8003)
+*   **Orchestrator Agent:** [http://localhost:8004](http://localhost:8004)
+*   **Vite Dev Server:** [http://localhost:5173](http://localhost:5173) (Optional, for UI development)
 
 ## Quick Start
 
@@ -65,52 +76,50 @@ multi-aca/
     ```bash
     ./run_local.sh
     ```
-    This starts all agents and the web app. The Researcher, Judge, and Content Builder run on ports 8001-8003, the Orchestrator on 8004, and the Web App on 8000.
+    This starts all agents and the web app.
 
 4.  **Access the App:**
     -   **http://localhost:8000**: Main entry point (FastAPI serving the built frontend).
-    -   **http://localhost:5173**: Vite dev server (supports hot-reloading for UI development).
 
-## Testing
+## Testing & Quality Assurance
 
-Run agent-specific tests to verify individual components:
+### Automated Testing
+Run agent-specific tests or the full suite:
 ```bash
+# Individual agents
 ./research_test.sh
 ./judge_test.sh
-```
-Or run the full suite:
-```bash
+
+# Full Python test suite (pytest)
 make test
+
+# Linting (ruff)
+make lint
+```
+
+### End-to-End (E2E) Testing
+Verify the entire pipeline from the API level:
+```bash
+# Test local environment
+make e2e-test
+
+# Test deployed Azure App Service
+make e2e-test-appservice
 ```
 
 ## Deployment
 
-### Azure Container Apps (ACA)
-The system is configured for a serverless experience on Azure, with each agent as an independent Container App.
-
-1.  **Login to Azure:**
-    ```bash
-    az login
-    ```
-
-2.  **Deploy all services:**
-    ```bash
-    make deploy
-    ```
-    This script handles Resource Group creation, ACR setup, image building, and ACA deployment.
-
-3.  **Check Status:**
-    ```bash
-    make status-aca
-    ```
-
-4.  **Get Public Endpoint:**
-    ```bash
-    make endpoint-aca
-    ```
-
-### Google Cloud Run
-While optimized for ACA, the microservices remain compatible with Cloud Run.
+### Microsoft Azure (App Service)
+This project is configured for deployment to **Azure App Service** as a single container running all services.
+-   **Architecture**: The `single-container/Dockerfile` builds an image that starts `app/main.py`. This single process hosts all agents (Researcher, Judge, Content Builder, Orchestrator) using ADK's multi-agent loading capability, ensuring efficient resource usage on App Service.
+-   **Prerequisites**: Azure CLI installed and logged in (`az login`).
+-   **Deploy**: Use `make deploy` to:
+  1. Set up an Azure Resource Group and Azure Container Registry (ACR).
+  2. Build and push the all-in-one image to ACR.
+  3. Create an App Service Plan and deploy the Web App.
+-   **Status**: Use `make status` to check the status of your app.
+-   **Endpoint**: Use `make endpoint` to get the public URL.
+-   **Cleanup**: Use `make destroy` to delete the entire resource group.
 
 ## Recommended Models
 

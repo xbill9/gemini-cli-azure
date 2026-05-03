@@ -24,14 +24,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 import click
 import uvicorn
+
 try:
-    from .a2a_utils import a2a_card_dispatch
     from .logging_config import get_uvicorn_log_config, setup_logging
 except (ImportError, ValueError):
-    from a2a_utils import a2a_card_dispatch
     from logging_config import get_uvicorn_log_config, setup_logging
 from google.adk.cli import fast_api
-from starlette.middleware.base import BaseHTTPMiddleware
 
 # Suppress experimental warnings
 warnings.filterwarnings("ignore", message=r".*\[EXPERIMENTAL\].*", category=UserWarning)

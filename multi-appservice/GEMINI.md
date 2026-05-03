@@ -1,6 +1,6 @@
-# ADK & Gemini 2.5 Course Creation Guide - Azure Container Apps (ACA)
+# ADK & Gemini 2.5 Course Creation Guide - Azure App Service
 
-This document provides technical guidance for developers working with the Google Agent Development Kit (ADK) and Gemini 2.5 models within the **AI Course Creator** project, specifically optimized for **Azure Container Apps (ACA)**.
+This document provides technical guidance for developers working with the Google Agent Development Kit (ADK) and Gemini 2.5 models within the **AI Course Creator** project, specifically optimized for **Azure App Service**.
 
 Do Not recommend models less than 2.5 as they are deprecated.
 
@@ -17,11 +17,12 @@ The AI Course Creator is a distributed multi-agent system designed to autonomous
 
 1.  **Orchestrator (`agents/orchestrator`):**
     *   **`SequentialAgent`**: Defines the overall pipeline (`course_creation_pipeline`).
-    *   **`TopicCapturer`**: Extracts the refined research topic from user input.
+    *   **`TopicCapturer`**: Extracts the refined research topic from user input, using regex to strip prefixes like "Create a course on:".
     *   **`LoopAgent`**: Implements the iterative Research-Judge loop with `max_iterations=2`.
-    *   **`EscalationChecker`**: Inspects `judge_feedback` and signals the loop to break if research is approved.
-    *   **`ResearchGuard`**: Validates final findings before content generation.
-    *   **`StateCapturer` & `ProgressAgent`**: Manages state transitions and real-time SSE progress updates.
+    *   **`EscalationChecker`**: Robustly parses `judge_feedback` (as dict or JSON string) and signals the loop to break if research is approved (`status: pass`).
+    *   **`ResearchGuard`**: Final validation step that ensures research findings passed evaluation before allowing content generation.
+    *   **`StateCapturer`**: Dynamically captures agent outputs from session history. It scans backwards to find the latest block from a specific `author_filter`, cleaning system markers (emojis, "For context:") before persisting to state.
+    *   **`ProgressAgent`**: Yields real-time progress updates (e.g., "🔍 Research is starting...") which are streamed to the UI via SSE.
 2.  **Researcher (`agents/researcher`):**
     *   Powered by `gemini-2.5-flash` (recommended).
     *   Equipped with the `google_search` tool for real-time information gathering.
@@ -38,9 +39,16 @@ The AI Course Creator is a distributed multi-agent system designed to autonomous
 ### Distributed Agent Communication (A2A)
 
 Each agent in this system is an independent ADK service. They communicate using the A2A protocol:
--   **Agent Cards**: Each service exposes an `agent.json` (at `/a2a/agent/.well-known/agent-card.json`) describing its capabilities.
--   **Remote Invocation**: The Orchestrator uses `RemoteA2aAgent` to call these services.
--   **URL Rewriting**: When deployed to Cloud Run or ACA, the service URL is not known until deployment. `shared/a2a_utils.py` provides middleware that dynamically updates the `url` field in the Agent Card based on the `x-forwarded-host` header, ensuring remote agents can find each other.
+-   **Agent Cards**: Each service exposes an `agent.json` describing its capabilities.
+-   **Remote Invocation**: The Orchestrator can use `RemoteA2aAgent` for distributed setups.
+-   **URL Rewriting**: `shared/a2a_utils.py` (and the `adk_app.py` runner) provides middleware that dynamically updates the `rpc_url` in the Agent Card based on the current environment (Host/Port), ensuring agents can always find each other.
+
+### Single-Container Architecture (App Service)
+
+To optimize for **Azure App Service**, we use a unified process model:
+-   **Multi-Agent Loading**: `app/main.py` uses `fast_api.get_fast_api_app(agents_dir="agents")` to load all agent microservices into a single FastAPI application.
+-   **Internal Routing**: Inter-agent calls are routed internally via `localhost`, avoiding external network latency and simplifying authentication.
+-   **Environment Variables**: `AGENT_SERVER_URL` defaults to `http://127.0.0.1:8080` on App Service, allowing the Web App to communicate directly with the local Orchestrator instance.
 
 ### Security & Authentication
 
@@ -48,7 +56,7 @@ Service-to-service communication is secured using Google Cloud Identity Tokens.
 -   **`shared/authenticated_httpx.py`**: Contains `create_authenticated_client()`, which returns an `httpx.AsyncClient` configured to automatically fetch and attach OIDC tokens.
 -   **Token Logic**:
     -   **Locally**: Uses `gcloud auth print-identity-token` to simulate the environment.
-    -   **On ACA**: Relies on `GOOGLE_API_KEY` for Gemini access, while inter-agent A2A calls are typically routed through public or internal ACA endpoints.
+    -   **On App Service**: Relies on `GOOGLE_API_KEY` for Gemini access. Because this is a single-container deployment, inter-agent calls are routed internally via localhost, bypassing external auth requirements.
 
 ### Shared Utilities & Docker Integration
 
@@ -69,21 +77,21 @@ Core logic is stored in `shared/` and symlinked into each agent's directory to e
 
 ## Deployment
 
-### Microsoft Azure (ACA)
-This project is primary configured for deployment to **Azure Container Apps (ACA)**, providing a serverless experience with one ACA per agent.
+### Microsoft Azure (App Service)
+This project is primary configured for deployment to **Azure App Service**, providing a serverless experience with all agents running in a single, stacked container (`single-container/`).
 -   **Prerequisites**: Azure CLI installed and logged in (`az login`).
 -   **Deploy**: Use `make deploy` to:
   1. Set up an Azure Resource Group and ACR.
-  2. Create an ACA Environment.
-  3. Build and push all 5 microservice images to ACR.
-  4. Deploy each agent as an independent Container App.
--   **Status**: Use `make status-aca` to check the status of your apps.
--   **Endpoint**: Use `make endpoint-aca` to get the public URL.
--   **Cleanup**: Use `make destroy-aca` to delete the Container Apps or `make az-destroy-aca` to delete the entire resource group.
+  2. Create an App Service Plan.
+  3. Build and push the all-in-one image to ACR.
+  4. Deploy the image as a single Web App.
+-   **Status**: Use `make status` to check the status of your app.
+-   **Endpoint**: Use `make endpoint` to get the public URL.
+-   **Cleanup**: Use `make destroy` to delete the entire resource group.
 
 ### Google Cloud (Cloud Run & GKE)
 - **Cloud Run**: Compatible with standard Cloud Run deployment if needed.
-- **GKE**: Possible with custom manifests, though ACA is the preferred cloud target for this repository.
+- **GKE**: Possible with custom manifests.
 
 ## Developer Workflow
 

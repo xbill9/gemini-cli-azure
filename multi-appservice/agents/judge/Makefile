@@ -37,9 +37,7 @@ help:
 	@echo "  test-invoke  - Test agent invocation via A2A"
 	@echo "  test-local   - Test the local agent endpoint via A2A"
 	@echo "  clean        - Remove temporary files and cache"
-	@echo "  deploy       - Deploy to Google Cloud Run"
 	@echo "  endpoint     - Show the deployed service URL"
-	@echo "  logs         - Show Cloud Run logs"
 
 status:
 	@echo "--- Local Status (Port $(PORT)) ---"
@@ -48,11 +46,11 @@ status:
 	else \
 		echo "Agent is NOT RUNNING locally"; \
 	fi
-	@echo "--- Cloud Run Status ($(AGENT_NAME)) ---"
+	@echo "--- Remote Status ($(AGENT_NAME)) ---"
 	@if [ -n "$(SERVICE_URL)" ]; then \
 		echo "Service is DEPLOYED at $(SERVICE_URL)"; \
 	else \
-		echo "Service is NOT DEPLOYED to Cloud Run"; \
+		echo "Service is NOT DEPLOYED"; \
 	fi
 
 install:
@@ -100,27 +98,12 @@ clean:
 	rm -rf .ruff_cache
 
 # Deployment Configuration
-# Usage: make deploy GOOGLE_CLOUD_PROJECT=your-project REGION=us-central1
-GOOGLE_CLOUD_PROJECT ?= $(shell gcloud config get-value project)
-REGION ?= us-central1
 GENAI_MODEL ?= gemini-2.5-flash
 # GOOGLE_API_KEY should be set in your environment
 
 # A2A Configuration
-SERVICE_URL ?= $(shell gcloud run services describe judge --platform managed --region $(REGION) --project $(GOOGLE_CLOUD_PROJECT) --format 'value(status.url)' 2>/dev/null)
 AGENT_NAME ?= judge
 TOPIC ?= The impact of AI on software engineering
-
-deploy: check-env
-	@echo "Building judge image with Cloud Build..."
-	gcloud builds submit $(PROJECT_ROOT) --config judge.cloudbuild.yaml
-	@echo "Deploying judge agent to Cloud Run..."
-	gcloud run deploy judge --min-instances 0 --max-instances 1 \
-		--image gcr.io/$(GOOGLE_CLOUD_PROJECT)/judge \
-		--project $(GOOGLE_CLOUD_PROJECT) \
-		--region $(REGION) \
-		--allow-unauthenticated \
-		--set-env-vars GOOGLE_CLOUD_PROJECT="$(GOOGLE_CLOUD_PROJECT)",GOOGLE_GENAI_USE_VERTEXAI="false",GOOGLE_API_KEY="$(GOOGLE_API_KEY)",GENAI_MODEL="$(GENAI_MODEL)"
 
 endpoint:
 	@if [ -z "$(SERVICE_URL)" ]; then echo "Error: SERVICE_URL is not set. Deploy the agent first."; exit 1; fi
@@ -140,6 +123,3 @@ test-local:
 	curl -s -X POST http://localhost:$(PORT)/a2a/$(AGENT_NAME) \
 	  -H "Content-Type: application/json" \
 	  -d '{"jsonrpc": "2.0", "id": "1", "method": "message/send", "params": {"contextId": "test-session", "message": {"role": "user", "parts": [{"text": "$(TOPIC)"}], "messageId": "m1"}}}' | jq .
-
-logs:
-	gcloud run services logs read judge --project $(GOOGLE_CLOUD_PROJECT) --region $(REGION) --limit 50

@@ -22,8 +22,7 @@ The **Researcher Agent** is a specialized microservice designed to gather compre
 ### Prerequisites
 
 - Python 3.13+
-- A Google Cloud Project with the Generative AI API enabled.
-- A valid `GOOGLE_API_KEY` or configured Google Cloud credentials.
+- A valid `GOOGLE_API_KEY` with access to Gemini models.
 
 ### Installation
 
@@ -60,13 +59,10 @@ You can test the agent's research capabilities using the `test-invoke` target:
 ```bash
 make test-invoke TOPIC="The impact of AI on software engineering"
 ```
+### Deployment
 
-## Deployment
+The agent is designed to be deployed as a containerized service.
 
-The agent is designed to be deployed to Google Cloud Run. Use the provided `Makefile` target for deployment:
-```bash
-make deploy
-```
 
 ## Agent Card (A2A)
 

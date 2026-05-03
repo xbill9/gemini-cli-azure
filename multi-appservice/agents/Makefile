@@ -11,7 +11,7 @@ help:
 	@echo "  test     - Run tests for all agents"
 	@echo "  status   - Check the status of all agents (local and remote)"
 	@echo "  clean    - Clean temporary files for all agents"
-	@echo "  deploy   - Deploy all agents to Cloud Run (if supported)"
+	@echo "  deploy   - Deploy all agents (if supported)"
 	@echo "  format   - Run formatting for all agents (if supported)"
 	@echo "  run      - Run all agents in parallel"
 	@echo "  endpoint - Get the deployed service URLs for all agents"

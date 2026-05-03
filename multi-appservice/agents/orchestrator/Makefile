@@ -16,10 +16,7 @@ ifneq (,$(wildcard ./.env))
 endif
 
 # Deployment variables
-REGION ?= us-central1
-GOOGLE_CLOUD_PROJECT ?= $(shell gcloud config get-value project)
 GENAI_MODEL ?= gemini-2.5-flash
-SERVICE_URL ?= $(shell gcloud run services describe orchestrator --region $(REGION) --format='value(status.url)' --project $(GOOGLE_CLOUD_PROJECT) 2>/dev/null)
 AGENT_NAME ?= orchestrator
 TOPIC ?= The impact of AI on software engineering
 
@@ -45,10 +42,9 @@ help:
 	@echo "  format       - Run formatting (ruff format)"
 	@echo "  test         - Run tests (pytest)"
 	@echo "  a2a          - Fetch the A2A Agent Card"
-	@echo "  test-invoke  - Test the agent endpoint with a research TOPIC (prefers Cloud Run if deployed)"
+	@echo "  test-invoke  - Test the agent endpoint with a research TOPIC"
 	@echo "  test-local   - Test the local agent endpoint with a research TOPIC"
 	@echo "  clean        - Remove temporary files and cache"
-	@echo "  deploy       - Deploy to Google Cloud Run"
 	@echo "  endpoint     - Get the deployed service URL"
 
 status:
@@ -58,11 +54,11 @@ status:
 	else \
 		echo "Agent is NOT RUNNING locally"; \
 	fi
-	@echo "--- Cloud Run Status ($(AGENT_NAME)) ---"
+	@echo "--- Remote Status ($(AGENT_NAME)) ---"
 	@if [ -n "$(SERVICE_URL)" ]; then \
 		echo "Service is DEPLOYED at $(SERVICE_URL)"; \
 	else \
-		echo "Service is NOT DEPLOYED to Cloud Run"; \
+		echo "Service is NOT DEPLOYED"; \
 	fi
 
 # Install dependencies
@@ -94,19 +90,10 @@ stop:
 		echo "Agent is not running."; \
 	fi
 
-# Deploy to Cloud Run using Cloud Build
-deploy: check-env
-	@echo "Deploying orchestrator agent to Cloud Run using cloudbuild.yaml..."
-	@echo "Building from project root: $(PROJECT_ROOT)"
-	gcloud builds submit $(PROJECT_ROOT) \
-		--project $(GOOGLE_CLOUD_PROJECT) \
-		--config cloudbuild.yaml \
-		--substitutions=_REGION=$(REGION),_GENAI_MODEL=$(GENAI_MODEL),_GOOGLE_API_KEY=$(GOOGLE_API_KEY)
-
 # Get the deployed service URL
 endpoint:
 	@if [ -z "$(SERVICE_URL)" ]; then \
-		echo "Error: Could not determine SERVICE_URL. Ensure the service '$(AGENT_NAME)' is deployed in project '$(GOOGLE_CLOUD_PROJECT)' and region '$(REGION)'."; \
+		echo "Error: Could not determine SERVICE_URL. Ensure the service '$(AGENT_NAME)' is deployed."; \
 		exit 1; \
 	fi
 	@echo $(SERVICE_URL)

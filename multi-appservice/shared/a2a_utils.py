@@ -43,7 +43,6 @@ except ImportError:
         PREV_AGENT_CARD_WELL_KNOWN_PATH = "/a2a/agent/.well-known/agent-card.json"
 
 
-from starlette.datastructures import URL
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.requests import Request as StarletteRequest
 from starlette.responses import Response

@@ -43,7 +43,7 @@ Throughout the process, the orchestrator sends **Progress Events** (`progress_or
 ### Prerequisites
 
 -   Python 3.10+
--   Access to Google Cloud (for Gemini models and deployment)
+-   Access to Gemini API (for models)
 -   `GOOGLE_API_KEY` set in your environment or `.env` file.
 
 ### Installation

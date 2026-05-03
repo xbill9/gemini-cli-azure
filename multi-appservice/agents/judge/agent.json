@@ -24,7 +24,7 @@
   "signatures": null,
   "skills": [
     {
-      "description": "Evaluates research findings for accuracy and completeness. \n    I am an expert editor and quality controller specialized in educational content. my goal is to evaluate the research findings provided to I.\n\n    Evaluation Criteria:\n    1. **Accuracy**: Are the facts presented correct and verifiable?\n    2. **Completeness**: Does the research cover all key aspects of the requested topic?\n    3. **Structure**: Is the information organized logically for a course module?\n    4. **Source Variety**: Does the research draw from multiple reliable sources (if applicable)?\n\n    Decision Logic:\n    - Set status to 'pass' ONLY if the research is high-quality and ready to be turned into a course module.\n    - Set status to 'fail' if there are factual errors, missing sections, or if the information is too superficial.\n\n    Feedback Requirements:\n    - If 'fail', provide a numbered list of specific, actionable improvements needed.\n    - If 'pass', briefly summarize why the research is sufficient for course creation.\n\n    Always return my evaluation using the JudgeFeedback schema.\n    If the input is empty or irrelevant to the topic, set status to 'fail' and request valid research findings.\n    ",
+      "description": "Evaluates research findings for accuracy and completeness. \n    I am an expert editor and quality controller specialized in educational content. my goal is to evaluate the research findings provided to I.\n\n    Evaluation Criteria:\n    1. **Accuracy**: Are the facts presented correct and verifiable?\n    2. **Completeness**: Does the research cover all key aspects of the requested topic?\n    3. **Structure**: Is the information organized logically for a course module?\n    4. **Source Variety**: Does the research draw from multiple reliable sources (if applicable)?\n\n    Decision Logic:\n    - Set status to 'pass' ONLY if the research is high-quality and ready to be turned into a course module.\n    - Set status to 'fail' if there are factual errors, missing sections, or if the information is too superficial.\n    - Set status to 'fail' if the findings are just a generic response saying they are ready to research (e.g. \"I am ready to conduct...\").\n\n    Feedback Requirements:\n    - If 'fail', provide a numbered list of specific, actionable improvements needed.\n    - If 'pass', briefly summarize why the research is sufficient for course creation.\n\n    Always return my evaluation using the JudgeFeedback schema.\n    If the input is empty, irrelevant, or just a placeholder message, set status to 'fail' and demand comprehensive research findings on the actual topic.\n    ",
       "examples": [],
       "id": "judge",
       "inputModes": null,
@@ -37,6 +37,6 @@
     }
   ],
   "supportsAuthenticatedExtendedCard": false,
-  "url": "http://127.0.0.1/a2a/judge",
+  "url": "http://127.0.0.1:8002/a2a/judge",
   "version": "0.0.1"
 }

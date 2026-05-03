@@ -267,7 +267,7 @@ class ProgressAgent(BaseAgent):
 def get_fallback_url(agent_name: str, default_port: int) -> str:
     # In a unified container, all agents are on the same port (usually 8080)
     # If we are on App Service, PORT is likely 8080.
-    # We prioritize 8080 over the microservice default ports (8001-8003) 
+    # We prioritize 8080 over the microservice default ports (8001-8003)
     # if we are in this "unified fallback" code path.
     port = os.environ.get("PORT", os.environ.get("WEBSITES_PORT", "8080"))
     return f"http://localhost:{port}/a2a/{agent_name}/.well-known/agent-card.json"
@@ -276,23 +276,23 @@ try:
     # Try relative imports first
     logger.info("Attempting to import local agents...")
     try:
-        from agents.researcher.agent import root_agent as researcher
-        from agents.judge.agent import root_agent as judge
         from agents.content_builder.agent import root_agent as content_builder
+        from agents.judge.agent import root_agent as judge
+        from agents.researcher.agent import root_agent as researcher
         logger.info("Successfully imported local agents via 'agents.*'")
     except ImportError as e1:
         logger.info(f"Failed 'agents.*' imports: {e1}. Trying absolute imports...")
         # Try absolute imports if installed as packages
-        from researcher.agent import root_agent as researcher
-        from judge.agent import root_agent as judge
         from content_builder.agent import root_agent as content_builder
+        from judge.agent import root_agent as judge
+        from researcher.agent import root_agent as researcher
         logger.info("Successfully imported local agents via absolute imports")
-    
+
     logger.info("Using in-process agents for researcher, judge, and content_builder")
 except ImportError as e:
     # Fallback to Remote for flexibility if needed
     logger.warning(f"Failed to import local agents ({e}), falling back to RemoteA2aAgent")
-    
+
     researcher_url = os.environ.get("RESEARCHER_AGENT_CARD_URL", get_fallback_url("researcher", 8001))
     researcher = RemoteA2aAgent(
         name="researcher",

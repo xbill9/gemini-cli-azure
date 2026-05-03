@@ -3,22 +3,22 @@ import logging
 import os
 import re
 from collections.abc import AsyncGenerator
+from pathlib import Path
 from typing import Any
 
 import httpx
-from a2a_utils import a2a_card_dispatch
 from authenticated_httpx import create_authenticated_client
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
+from google.adk.cli import fast_api
 from httpx_sse import aconnect_sse
 from logging_config import get_uvicorn_log_config, setup_logging
 from opentelemetry import trace
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.sdk.trace import TracerProvider, export
 from pydantic import BaseModel
-from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class Feedback(BaseModel):
@@ -44,24 +44,17 @@ try:
 except Exception as e:
     logger.warning(f"Cloud Trace initialization skipped: {e}")
 
-from google.adk.cli import fast_api
-from pathlib import Path
-
 # Initialize ADK app which will host all agents in the same process
 agents_dir = str(Path(__file__).parent.parent / "agents")
 app = fast_api.get_fast_api_app(
     agents_dir=agents_dir,
     a2a=True,
-    web=True,
+    web=False,
 )
 
 @app.get("/health")
 async def health():
     return {"status": "ok"}
-
-@app.get("/")
-async def root():
-    return {"status": "ok", "message": "AI Course Creator API with built-in Agents"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -83,7 +76,6 @@ else:
 
 logger.info(f"Unified App: Hosting agents and using server '{agent_server_url}'")
 
-from google.adk.agents.remote_a2a_agent import RemoteA2aAgent
 agent_url = f"{agent_server_url}/a2a/{agent_name}/.well-known/agent-card.json"
 agent = RemoteA2aAgent(
     name=agent_name,
@@ -386,11 +378,6 @@ async def chat_stream(request: SimpleChatRequest):
         yield json.dumps({"type": "result", "text": final_text}) + "\n"
 
     return StreamingResponse(event_generator(), media_type="application/x-ndjson")
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
 
 
 # Mount frontend from the Vite build directory

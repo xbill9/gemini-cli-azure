@@ -11,7 +11,7 @@ export GOOGLE_GENAI_USE_VERTEXAI = False
 export LOG_LEVEL = DEBUG
 export GENAI_MODEL = gemini-2.5-flash
 
-.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test-aca e2e-test-as deploy deploy-aca deploy-as deploy-single deploy-aca-single deploy-as-single destroy-aca destroy-as status-aca status-as status endpoint-aca endpoint-as clean help az-destroy-aca az-destroy-as aca-status as-status check-local
+.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test deploy destroy status endpoint clean help check-local
 
 help:
 	@echo "Available commands:"
@@ -27,21 +27,11 @@ help:
 	@echo "  test-researcher       - Test the Researcher agent directly"
 	@echo "  test-judge            - Test the Judge agent directly"
 	@echo "  test-orchestrator     - Test the Orchestrator logic"
-	@echo "  test-e2e-aca          - Run ACA E2E test (Full Flow)"
-	@echo "  test-e2e-as           - Run App Service E2E test (Full Flow)"
+	@echo "  e2e-test              - Run E2E test against TEST_URL (default: localhost:8000)"
 	@echo "  lint                  - Run linting checks (ruff)"
-	@echo "  deploy                - Deploy all services (defaults to ACA)"
-	@echo "  deploy-aca            - Deploy all services to Azure Container Apps (ACA)"
-	@echo "  deploy-as             - Deploy all services to Azure App Service"
-	@echo "  deploy-single         - Deploy all-in-one container (defaults to ACA)"
-	@echo "  deploy-aca-single     - Deploy all-in-one container to ACA"
-	@echo "  deploy-as-single      - Deploy all-in-one container to App Service"
-	@echo "  destroy-aca           - Delete ACA resources"
-	@echo "  destroy-as            - Delete App Service resources"
-	@echo "  status-aca            - Show ACA status"
-	@echo "  status-as             - Show App Service status"
-	@echo "  endpoint-aca          - Show ACA service endpoint"
-	@echo "  endpoint-as           - Show App Service endpoint"
+	@echo "  deploy                - Deploy all-in-one container to App Service"
+	@echo "  destroy               - Delete App Service resources"
+	@echo "  endpoint              - Show App Service endpoint"
 	@echo "  clean                 - Remove caches and logs"
 
 TEST_URL ?= http://localhost:8000
@@ -55,32 +45,13 @@ e2e-test:
 		|| (echo "E2E Test Failed: No valid response from $(TEST_URL)" && exit 1)
 	@echo "\nE2E Test Completed successfully!"
 
-e2e-test-aca:
-	@ACA_URL=$$(./aca/endpoint-aca.sh | grep "https://" | tr -d '\n'); \
-	if [ -z "$$ACA_URL" ]; then \
-		echo "ERROR: Could not find course-creator ACA service URL. Is it deployed?"; \
-		exit 1; \
-	fi; \
-	$(MAKE) e2e-test TEST_URL=$$ACA_URL
-
-e2e-test-aca-single:
-	@HOSTNAME_ID=$$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10); \
-	ACA_URL=$$(az containerapp show --name "adk-all-in-one-$$HOSTNAME_ID" --resource-group "adk-rg-aca" --query "properties.configuration.ingress.fqdn" -o tsv | grep "." || echo ""); \
-	if [ -z "$$ACA_URL" ]; then \
-		echo "ERROR: Could not find all-in-one ACA service URL. Is it deployed?"; \
-		exit 1; \
-	fi; \
-	$(MAKE) e2e-test TEST_URL=https://$$ACA_URL
-
-e2e-test-as:
-	@AS_URL=$$(./appservice/endpoint-appservice.sh | grep "https://" | tr -d '\n'); \
+e2e-test-appservice:
+	@AS_URL=$$( $(MAKE) endpoint | grep "https://" | tr -d '\n'); \
 	if [ -z "$$AS_URL" ]; then \
 		echo "ERROR: Could not find App Service URL. Is it deployed?"; \
 		exit 1; \
 	fi; \
 	$(MAKE) e2e-test TEST_URL=$$AS_URL
-
-e2e-test-appservice: e2e-test-as
 
 install:
 	@echo "Installing root dependencies..."
@@ -187,53 +158,26 @@ test-orchestrator:
 test-content-builder:
 	python agents/content_builder/tests/test_agent.py
 
-deploy: deploy-as
-
-deploy-aca:
-	./aca/deploy-aca.sh
-
-deploy-as:
-	./appservice/deploy-appservice.sh
-
-deploy-single: deploy-as-single
-
-deploy-aca-single:
-	./aca/deploy-aca-single.sh
-
-deploy-as-single:
+deploy:
 	./single-container/deploy.sh
 
-destroy-aca:
-	./aca/destroy-aca.sh
-
-destroy-as:
-	./appservice/destroy-appservice.sh
-
-az-destroy-aca:
-	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-aca"}; \
-	echo "Destroying Azure Resource Group $$AZ_DEFAULTS_GROUP..."; \
-	echo "Resource Group name used: $$AZ_DEFAULTS_GROUP"; \
-	az group delete --name "$$AZ_DEFAULTS_GROUP" --yes --no-wait; \
-	echo "Resource Group deletion initiated."
-
-az-destroy-as:
+destroy:
 	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-as"}; \
 	echo "Destroying Azure Resource Group $$AZ_DEFAULTS_GROUP..."; \
 	echo "Resource Group name used: $$AZ_DEFAULTS_GROUP"; \
 	az group delete --name "$$AZ_DEFAULTS_GROUP" --yes --no-wait; \
 	echo "Resource Group deletion initiated."
 
-status-aca:
-	./aca/status-aca.sh
-
-status-as:
-	./appservice/status-appservice.sh
-
-aca-status: status-aca
-
-as-status: status-as
-
 status: check-local
+	@echo "--- Azure App Service Status ---"
+	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-as"}; \
+	az webapp list --resource-group "$$AZ_DEFAULTS_GROUP" -o table || echo "No App Services found or Resource Group does not exist."
+
+endpoint:
+	@AZ_DEFAULTS_GROUP=$${AZ_DEFAULTS_GROUP:-"adk-rg-as"}; \
+	HOSTNAME_ID=$$(hostname | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10); \
+	WEBAPP_NAME="adk-$$HOSTNAME_ID-full"; \
+	az webapp show --name "$$WEBAPP_NAME" --resource-group "$$AZ_DEFAULTS_GROUP" --query defaultHostName -o tsv | sed 's/^/https:\/\//' || echo "Endpoint not found."
 
 local:
 	@echo "--- Local Service URLs ---"
@@ -251,18 +195,3 @@ check-local:
 	@netstat -tulnp 2>/dev/null | grep -E "8000|8001|8002|8003|8004|5173" || echo "No services listening on expected ports (8000-8004, 5173)."
 	@echo "--- Process Status ---"
 	@ps aux | grep -E "[s]hared[.]adk_app|[m]ain[.]py|[v]ite" || echo "No matching processes found."
-
-endpoint-aca:
-	./aca/endpoint-aca.sh
-
-endpoint-as:
-	./appservice/endpoint-appservice.sh
-
-clean:
-	@echo "Cleaning up caches and temporary files..."
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	find . -type d -name ".ruff_cache" -exec rm -rf {} +
-	find . -type d -name ".adk" -exec rm -rf {} +
-	find . -type f -name "*.log" -delete
-	@echo "Clean completed."

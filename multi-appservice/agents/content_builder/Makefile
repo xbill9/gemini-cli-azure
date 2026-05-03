@@ -6,10 +6,7 @@ PIP = pip3
 PORT = 8003
 SERVICE_NAME = content-builder
 AGENT_NAME = content_builder
-REGION ?= us-central1
-GOOGLE_CLOUD_PROJECT ?= $(shell gcloud config get-value project)
 GENAI_MODEL ?= gemini-2.5-flash
-SERVICE_URL ?= $(shell gcloud run services describe $(SERVICE_NAME) --region $(REGION) --format 'value(status.url)' 2>/dev/null)
 
 # Find the project root directory
 PROJECT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null || pwd)
@@ -41,10 +38,8 @@ help:
 	@echo "  format       - Run formatting (ruff format)"
 	@echo "  test         - Run tests (pytest)"
 	@echo "  clean        - Remove temporary files and cache"
-	@echo "  build        - Build and deploy using Cloud Build"
-	@echo "  deploy       - Deploy to Cloud Run"
-	@echo "  endpoint     - Get the Cloud Run service URL"
-	@echo "  a2a          - Fetch the A2A agent card (uses SERVICE_URL if set/found, else localhost)"
+	@echo "  endpoint     - Get the deployed service URL"
+	@echo "  a2a          - Fetch the A2A agent card (uses SERVICE_URL if set, else localhost)"
 	@echo "  test-invoke  - Call the agent endpoint with a research TOPIC and RESEARCH_FINDINGS"
 	@echo "  test-local   - Test the local agent endpoint with a research TOPIC and RESEARCH_FINDINGS"
 
@@ -55,11 +50,11 @@ status:
 	else \
 		echo "Agent is NOT RUNNING locally"; \
 	fi
-	@echo "--- Cloud Run Status ($(SERVICE_NAME)) ---"
+	@echo "--- Remote Status ($(SERVICE_NAME)) ---"
 	@if [ -n "$(SERVICE_URL)" ]; then \
 		echo "Service is DEPLOYED at $(SERVICE_URL)"; \
 	else \
-		echo "Service is NOT DEPLOYED to Cloud Run"; \
+		echo "Service is NOT DEPLOYED"; \
 	fi
 
 install:
@@ -106,22 +101,12 @@ clean:
 	rm -rf .pytest_cache
 	rm -rf .ruff_cache
 
-build:
-	gcloud builds submit --config cloudbuild.yaml .
-
-deploy:
-	gcloud run deploy $(SERVICE_NAME) --min-instances 0 --max-instances 1 \
-		--source . \
-		--project $(GOOGLE_CLOUD_PROJECT) \
-		--region $(REGION) \
-		--allow-unauthenticated \
-		--set-env-vars GOOGLE_CLOUD_PROJECT=$(GOOGLE_CLOUD_PROJECT) \
-		--set-env-vars GOOGLE_GENAI_USE_VERTEXAI="false" \
-		--set-env-vars GOOGLE_API_KEY=$(GOOGLE_API_KEY) \
-		--set-env-vars GENAI_MODEL=$(GENAI_MODEL)
-
 endpoint:
-	@gcloud run services describe $(SERVICE_NAME) --region $(REGION) --format 'value(status.url)'
+	@if [ -z "$(SERVICE_URL)" ]; then \
+		echo "Error: SERVICE_URL is not set."; \
+		exit 1; \
+	fi
+	@echo $(SERVICE_URL)
 
 a2a:
 	@if [ -n "$(SERVICE_URL)" ]; then \
