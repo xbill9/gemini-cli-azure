@@ -11,7 +11,7 @@ export GOOGLE_GENAI_USE_VERTEXAI = False
 export LOG_LEVEL = DEBUG
 export GENAI_MODEL = gemini-2.5-flash
 
-.PHONY: install start run run-local restart-local local frontend lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test deploy destroy status endpoint clean help install-fabric-cli
+.PHONY: install start run run-local restart-local local frontend frontend-local lint test test-researcher test-judge test-content-builder test-orchestrator researcher-local judge-local content-builder-local orchestrator-local backend-local frontend-local agents-local stop-local start-local check-frontend e2e-test deploy destroy status endpoint clean help install-fabric-cli
 
 help:
 	@echo "Available commands:"
@@ -85,84 +85,11 @@ stop-local:
 
 frontend:
 	@echo "Building frontend..."
-	@cd app/frontend && npm install && npm run build
-
-lint:
-	ruff check .
-
-test:
-	python -m pytest
-
-test-researcher:
-	./research_test.sh
-
-test-judge:
-	./judge_test.sh
-
-test-orchestrator:
-	python agents/orchestrator/test_orchestrator.py
-
-test-content-builder:
-	python agents/content_builder/tests/test_agent.py
-
-deploy:
-	chmod +x fabric/deploy.sh
-	./fabric/deploy.sh
-
-destroy:
-	chmod +x fabric/destroy.sh
-	./fabric/destroy.sh
-
-status:
-	@$(MAKE) check-local
-	@echo "\n--- Azure Fabric / ACA Status ---"
-	@chmod +x fabric/status.sh
-	@./fabric/status.sh
-
-endpoint:
-	@chmod +x fabric/endpoint.sh
-	@./fabric/endpoint.sh
-
-local:
-	@echo "--- Local Service URLs ---"
-	@echo "Frontend: http://localhost:5173"
-	@echo "Backend:  http://localhost:8000 (main app)"
-	@echo "Agents:"
-	@echo "  Researcher:      http://localhost:8001"
-	@echo "  Judge:           http://localhost:8002"
-	@echo "  Content Builder: http://localhost:8003"
-	@echo "  Orchestrator:    http://localhost:8004"
-
-check-local:
-	@echo "Checking status of locally running agents and servers..."
-	@echo "--- Network Status ---"
-	@netstat -tulnp 2>/dev/null | grep -E "8000|8001|8002|8003|8004|5173" || echo "No services listening on expected ports (8000-8004, 5173)."
-	@echo "--- Process Status ---"
-	@ps aux | grep -E "[s]hared[.]adk_app|[m]ain[.]py|[v]ite" || echo "No matching processes found."
-
-install-fabric-cli:
-	@echo "Installing Microsoft Fabric CLI (ms-fabric-cli)..."
-	pip install ms-fabric-cli
-	@echo "Adding Azure CLI Fabric extension..."
-	az extension add --name microsoft-fabric --yes
-
-clean:
-	@echo "Cleaning up caches and temporary files..."
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	find . -type d -name ".ruff_cache" -exec rm -rf {} +
-	find . -type d -name ".adk" -exec rm -rf {} +
-	find . -type f -name "*.log" -delete
-	rm -f fabric/WorkloadManifest.xml
-	@echo "Clean completed."
-
+	@$(MAKE) -C app build-frontend
 
 frontend-local:
 	@echo "Starting Frontend (Vite) dev server..."
 	@/bin/bash -c "cd app/frontend && npm run dev -- --host 0.0.0.0"
-
-frontend:
-	make -C app build-frontend
 
 lint:
 	ruff check .

@@ -1,27 +1,26 @@
-import asyncio
 import json
 import logging
 import os
 import re
+
+# Suppress experimental warnings
+import warnings
 from collections.abc import AsyncGenerator
 from typing import Any
 
 import httpx
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from httpx_sse import aconnect_sse
-from pydantic import BaseModel
 
 # ADK imports
 from google.adk.cli import fast_api as adk_fast_api
+from httpx_sse import aconnect_sse
+from pydantic import BaseModel
 
 # Import shared configurations
 from shared.logging_config import get_uvicorn_log_config, setup_logging
 
-# Suppress experimental warnings
-import warnings
 warnings.filterwarnings("ignore", message=r".*\[EXPERIMENTAL\].*", category=UserWarning)
 os.environ["ADK_SUPPRESS_EXPERIMENTAL_FEATURE_WARNINGS"] = "True"
 
@@ -70,7 +69,7 @@ async def get_session(user_id: str, session_id: str) -> dict[str, Any] | None:
         response.raise_for_status()
         return response.json()
 
-async def query_adk_server_local(user_id: str, message: str, session_id: str) -> AsyncGenerator[dict[str, Any], None]:
+async def query_adk_server_local(user_id: str, message: str, session_id: str) -> AsyncGenerator[dict[str, Any]]:
     request = {
         "appName": "orchestrator",
         "userId": user_id,
@@ -78,7 +77,7 @@ async def query_adk_server_local(user_id: str, message: str, session_id: str) ->
         "newMessage": {"role": "user", "parts": [{"text": message}]},
         "streaming": True,
     }
-    
+
     timeout = httpx.Timeout(60.0)
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
@@ -112,11 +111,14 @@ def extract_all_text(event_obj: dict[str, Any]) -> list[str]:
     return texts
 
 def merge_strings(existing: str, incoming: str) -> str:
-    if not existing: return incoming
-    if not incoming: return existing
+    if not existing:
+        return incoming
+    if not incoming:
+        return existing
     e_norm = existing.rstrip()
     i_norm = incoming.lstrip()
-    if not i_norm: return existing
+    if not i_norm:
+        return existing
     max_overlap = min(len(e_norm), len(i_norm), 500)
     for size in range(max_overlap, 0, -1):
         if e_norm.endswith(i_norm[:size]):
