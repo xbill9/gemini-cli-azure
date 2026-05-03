@@ -1,6 +1,8 @@
-# AI Course Creator (Distributed Multi-Agent System) - Azure Container Apps
+# AI Course Creator (Distributed Multi-Agent System) - Fabric Stacked Edition
 
-A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure Container Apps (ACA)** while maintaining compatibility with local development and Google Cloud services.
+A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. 
+
+This version is optimized for **stacked deployment** to **Microsoft Fabric** using **Azure Container Apps (ACA)** for hosting the microservices.
 
 ## Architecture
 
@@ -15,8 +17,8 @@ This project uses a distributed microservices architecture where each agent runs
 ## Project Structure
 
 ```
-multi-aca/
-├── aca/                  # Azure Container Apps deployment scripts
+multi-fabric/
+├── fabric/               # Microsoft Fabric & Azure Container Apps deployment
 ├── agents/
 │   ├── orchestrator/     # Workflow management & remote agent connections
 │   ├── researcher/       # Information gathering (Google Search)
@@ -28,12 +30,8 @@ multi-aca/
 │   ├── adk_app.py        # Standardized ADK FastAPI wrapper
 │   ├── authenticated_httpx.py # Service-to-service auth utilities
 │   └── logging_config.py # Centralized logging configuration
-├── Makefile              # Development and Azure deployment shortcuts
+├── Makefile              # Development and Azure Fabric deployment shortcuts
 ├── run_local.sh          # Local development startup script
-├── init.sh               # Google Cloud project creation script
-├── init2.sh              # Google Cloud service enablement and .env setup
-├── set_adc.sh            # GCloud Application Default Credentials setup
-├── set_env.sh            # Local .env generation script
 └── *_test.sh             # Agent-specific testing scripts
 ```
 
@@ -42,32 +40,24 @@ multi-aca/
 *   **Python 3.13+**
 *   **Node.js & npm**: For frontend development and builds.
 *   **Azure CLI**: For ACA deployment (`az login`).
-*   **Google Cloud SDK**: For authentication and Gemini API access.
-*   **Google API Key**: Required for Gemini (unless using Vertex AI).
+*   **Microsoft Fabric extension**: For Fabric integration (`make install-fabric-cli`).
+*   **Google API Key**: Required for Gemini (placed in `~/gemini.key`).
 
 ## Quick Start
 
-1.  **Initialize Environment (Google Cloud):**
-    ```bash
-    # Create project and enable billing (if needed)
-    ./init.sh
-    # Enable services and set up .env
-    ./init2.sh
-    ```
-
-2.  **Install Dependencies:**
+1.  **Install Dependencies:**
     ```bash
     # This installs root, agents, app, and frontend dependencies
     make install
     ```
 
-3.  **Run Locally:**
+2.  **Run Locally:**
     ```bash
-    ./run_local.sh
+    make start
     ```
     This starts all agents and the web app. The Researcher, Judge, and Content Builder run on ports 8001-8003, the Orchestrator on 8004, and the Web App on 8000.
 
-4.  **Access the App:**
+3.  **Access the App:**
     -   **http://localhost:8000**: Main entry point (FastAPI serving the built frontend).
     -   **http://localhost:5173**: Vite dev server (supports hot-reloading for UI development).
 
@@ -85,8 +75,8 @@ make test
 
 ## Deployment
 
-### Microsoft Azure (ACA & Fabric)
-The system is configured for a serverless experience on Azure, with each agent as an independent Container App. It also supports Microsoft Fabric integration.
+### Microsoft Fabric (Stacked on ACA)
+The system is configured for a stacked microservice deployment on Azure Container Apps, integrated as a Microsoft Fabric workload.
 
 1.  **Login to Azure:**
     ```bash
@@ -98,30 +88,21 @@ The system is configured for a serverless experience on Azure, with each agent a
     make install-fabric-cli
     ```
 
-3.  **Deploy all services:**
+3.  **Deploy the Stack:**
     ```bash
-    # Standard ACA deployment
     make deploy
-    
-    # OR Deploy and prepare for Microsoft Fabric
-    make deploy-fabric
     ```
-    The `deploy-fabric` script handles Resource Group creation, ACR setup, image building, ACA deployment, and generates a `WorkloadManifest.xml`.
+    This script handles Resource Group creation, ACR setup, image building, ACA deployment for all 5 services, and generates a `WorkloadManifest.xml` for Fabric.
 
 4.  **Check Status:**
     ```bash
-    make status-aca
-    # For Fabric capacity status
-    make status-fabric
+    make status
     ```
 
 5.  **Get Public Endpoint:**
     ```bash
-    make endpoint-aca
+    make endpoint
     ```
-
-### Google Cloud Run
-While optimized for ACA, the microservices remain compatible with Cloud Run.
 
 ## Recommended Models
 

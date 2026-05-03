@@ -3,7 +3,7 @@
 
 set -e
 
-AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-aca"}
+AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-fabric"}
 
 echo "--- Azure ACA Endpoint ---"
 FQDN=$(az containerapp show --name course-creator --resource-group "$AZ_RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" -o tsv 2>/dev/null)

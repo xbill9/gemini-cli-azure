@@ -1,8 +1,12 @@
-# Use the Google Cloud SDK bundled Python 3.13
-PYTHON_CMD=/usr/lib/google-cloud-sdk/platform/bundledpythonunix/bin/python3
-if [ ! -f "$PYTHON_CMD" ]; then
-  PYTHON_CMD=python3
-fi
+#!/bin/bash
+# judge_test.sh - Quick test for Judge agent
 
-# This runs the judge agent in interactive mode
-$PYTHON_CMD -m google.adk.cli run agents/judge
+PORT=${1:-8002}
+FINDINGS=${2:-"The internet started as ARPANET in the late 1960s."}
+
+echo "Testing Judge agent on port $PORT..."
+curl -s -X POST "http://localhost:$PORT/a2a/judge/invoke" \
+  -H "Content-Type: application/json" \
+  -d "{\"message\": \"Evaluate these findings: $FINDINGS\", \"user_id\": \"test_user\"}" \
+  --no-buffer
+echo -e "\nTest complete."

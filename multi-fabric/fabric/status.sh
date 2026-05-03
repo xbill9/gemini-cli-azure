@@ -3,7 +3,7 @@
 
 set -e
 
-AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-aca"}
+AZ_RESOURCE_GROUP=${AZ_RESOURCE_GROUP:-"adk-rg-fabric"}
 
 echo "Checking Azure Container Apps status in $AZ_RESOURCE_GROUP..."
 az containerapp list --resource-group "$AZ_RESOURCE_GROUP" --query "[].{Name:name, State:properties.provisioningState, FQDN:properties.configuration.ingress.fqdn}" -o table

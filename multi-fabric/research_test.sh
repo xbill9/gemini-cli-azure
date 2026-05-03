@@ -1,8 +1,12 @@
-# Use the Google Cloud SDK bundled Python 3.13
-PYTHON_CMD=/usr/lib/google-cloud-sdk/platform/bundledpythonunix/bin/python3
-if [ ! -f "$PYTHON_CMD" ]; then
-  PYTHON_CMD=python3
-fi
+#!/bin/bash
+# research_test.sh - Quick test for Researcher agent
 
-# This runs the researcher agent in interactive mode
-$PYTHON_CMD -m google.adk.cli run agents/researcher
+PORT=${1:-8001}
+MESSAGE=${2:-"Research the history of the internet."}
+
+echo "Testing Researcher agent on port $PORT..."
+curl -s -X POST "http://localhost:$PORT/a2a/researcher/invoke" \
+  -H "Content-Type: application/json" \
+  -d "{\"message\": \"$MESSAGE\", \"user_id\": \"test_user\"}" \
+  --no-buffer
+echo -e "\nTest complete."
