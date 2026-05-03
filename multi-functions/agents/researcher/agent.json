@@ -1,0 +1,55 @@
+{
+  "additionalInterfaces": null,
+  "capabilities": {
+    "extensions": null,
+    "pushNotifications": null,
+    "stateTransitionHistory": null,
+    "streaming": true
+  },
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "description": "Gathers information on a topic.",
+  "documentationUrl": null,
+  "iconUrl": null,
+  "name": "researcher",
+  "preferredTransport": "JSONRPC",
+  "protocolVersion": "0.3.0",
+  "provider": null,
+  "security": null,
+  "securitySchemes": null,
+  "signatures": null,
+  "skills": [
+    {
+      "description": "Gathers information on a topic. I am a professional researcher. Always provide a detailed Markdown report with multiple sections and citations/sources.",
+      "examples": [],
+      "id": "researcher",
+      "inputModes": null,
+      "name": "model",
+      "outputModes": null,
+      "security": null,
+      "tags": [
+        "llm"
+      ]
+    },
+    {
+      "description": "google_search",
+      "examples": null,
+      "id": "researcher-google_search",
+      "inputModes": null,
+      "name": "google_search",
+      "outputModes": null,
+      "security": null,
+      "tags": [
+        "llm",
+        "tools"
+      ]
+    }
+  ],
+  "supportsAuthenticatedExtendedCard": false,
+  "url": "http://127.0.0.1:8001/a2a/researcher",
+  "version": "0.0.1"
+}

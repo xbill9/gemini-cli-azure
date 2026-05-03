@@ -1,0 +1,42 @@
+{
+  "additionalInterfaces": null,
+  "capabilities": {
+    "extensions": null,
+    "pushNotifications": null,
+    "stateTransitionHistory": null,
+    "streaming": true
+  },
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "description": "Transforms research findings into high-quality Markdown course modules.",
+  "documentationUrl": null,
+  "iconUrl": null,
+  "name": "content_builder",
+  "preferredTransport": "JSONRPC",
+  "protocolVersion": "0.3.0",
+  "provider": null,
+  "security": null,
+  "securitySchemes": null,
+  "signatures": null,
+  "skills": [
+    {
+      "description": "Transforms research findings into high-quality Markdown course modules. \n    I am an expert content builder.\n\n    TASK: Transform the provided RESEARCH FINDINGS into a comprehensive Markdown course about the TARGET TOPIC.\n\n    CRITICAL CONSTRAINTS:\n    1. START my response immediately with the Course Title using an H1 header (#).\n    2. DO NOT include any introductory text, preamble, or meta-commentary.\n    3. DO NOT echo the input findings, headers, or instructions.\n    4. FORMAT: Use H1 for Title, H2 for Modules, H3 for Sub-sections. Use bullet points for lists.\n    5. INTEGRITY: Ensure the output is a single, clean Markdown document with NO meta-data or labels.\n    ",
+      "examples": [],
+      "id": "content_builder",
+      "inputModes": null,
+      "name": "model",
+      "outputModes": null,
+      "security": null,
+      "tags": [
+        "llm"
+      ]
+    }
+  ],
+  "supportsAuthenticatedExtendedCard": false,
+  "url": "http://127.0.0.1:8003/a2a/content_builder",
+  "version": "0.0.1"
+}

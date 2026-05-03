@@ -1,6 +1,24 @@
-google-genai
-websockets
-python-dotenv
+# Core Dependencies
+google-adk==1.31.1
+a2a-sdk==0.3.25
 fastapi
+pydantic
 uvicorn
-google-adk
+python-json-logger
+click
+httpx
+httpx_sse
+google-genai
+google-cloud-logging
+opentelemetry-exporter-gcp-trace
+psycopg2-binary
+
+# Dev Dependencies
+pytest
+pytest-asyncio
+nest-asyncio
+ruff
+mypy
+codespell
+types-pyyaml
+types-requests

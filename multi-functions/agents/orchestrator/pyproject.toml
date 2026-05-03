@@ -1,0 +1,29 @@
+[project]
+name = "orchestrator-builder-agent"
+version = "0.1.0"
+description = "Orchestrator microservice agent"
+requires-python = ">=3.11"
+dependencies = [
+    "shared-utils",
+    "google-adk==1.31.1",
+    "a2a-sdk==0.3.25",
+    "fastapi",
+    "uvicorn",
+    "python-json-logger",
+    "google-cloud-logging",
+    "opentelemetry-exporter-gcp-trace",
+    "httpx",
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "black",
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+include = ["agent.py", "run.sh"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

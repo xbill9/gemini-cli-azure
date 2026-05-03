@@ -1,0 +1,23 @@
+[project]
+name = "shared-utils"
+version = "0.1.0"
+description = "Shared utilities for the multi-agent system"
+requires-python = ">=3.11"
+dependencies = [
+    "a2a-sdk==0.3.25",
+    "fastapi",
+    "uvicorn",
+    "click",
+    "google-adk==1.31.1",
+    "python-json-logger",
+    "google-cloud-logging",
+    "opentelemetry-exporter-gcp-trace",
+    "httpx",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

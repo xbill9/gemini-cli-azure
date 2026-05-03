@@ -1,98 +1,127 @@
-# Alpha Rescue Drone - Biometric Security System (Mission Alpha)
+# AI Course Creator (Distributed Multi-Agent System) - Azure Functions
 
-This project implements a real-time biometric security system for the Alpha Rescue Drone Fleet. It leverages **Gemini 3.1 Flash Live** and the **Google Agent Development Kit (ADK)** to verify hand gestures via a live multimodal stream.
+A multi-agent system built with Google's Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocol. It features a team of specialized microservice agents that research, judge, and build content, orchestrated to deliver high-quality educational modules. This version is optimized for deployment to **Azure Functions** as a single combined container.
 
-## Overview
+## Architecture
 
-The system acts as a "Security Interrogator" that requires a specific sequence of hand gestures (finger counts 1-5) to unlock the drone's neural link. It uses high-speed video analysis (2Hz) and low-latency audio feedback to create a seamless, futuristic security handshake.
+This project uses a distributed microservices architecture where each agent runs in its own process and communicates via the A2A protocol:
 
-## Features
-
--   **Real-time Hand Gesture Recognition**: Detects the number of fingers shown (1-5) with sub-second latency.
--   **4-Digit Biometric Handshake**: Users must successfully show a randomized sequence of 4 digits within 65 seconds to authenticate.
--   **Offensive Gesture Detection**: Includes a critical safety protocol that triggers a `system_error` and immediately terminates the neural link session if the middle finger is detected.
--   **Heavy Metal Override (Protocol: Sabbath)**: A secret authentication bypass that activates `heavy_metal_mode` when the "Devil's Horns" gesture is detected (index and pinky extended).
-    -   *Bonus*: The frontend plays the "War Pigs" intro to celebrate successful override.
--   **Neural Link Startup Sequence**: A visual and audio handshake ensures synchronization. Users hear "Biometric Scanner Online" before the sequence begins.
--   **Robotic Persona**: The agent maintains a cold, monotone, and efficient persona, providing minimal but precise verbal confirmations (e.g., "Two digits.").
--   **Mock Server Integration**: A high-fidelity mock mode (`mock.sh`) allows for frontend development with a persistent banner ticker and simulated model responses.
-
--   **Multimodal Streaming**: Bidirectional WebSocket connection handling synchronized Video (frames), Audio (16kHz PCM), and Text.
--   **Gemini 3.1 Flash Live Integration**: Optimized for the latest Live API capabilities, including native audio processing and complex tool-calling.
+*   **Orchestrator Service (`agents/orchestrator`):** Manages the overall course creation pipeline using **`SequentialAgent`**. It implements an iterative Research-Judge loop with **`LoopAgent`** (max 2 iterations). Key components include **`TopicCapturer`**, **`EscalationChecker`**, **`ResearchGuard`**, **`StateCapturer`**, and **`ProgressAgent`** for status updates.
+*   **Researcher Service (`agents/researcher`):** Gathers detailed topic information using the `google_search` tool.
+*   **Judge Service (`agents/judge`):** Evaluates research quality against a Pydantic schema (`JudgeFeedback`).
+*   **Content Builder Service (`agents/content_builder`):** Compiles validated research into a professional Markdown course module.
+*   **Web App (`app/`):** A FastAPI backend with a Vanilla TypeScript + Vite frontend that streams real-time agent events via SSE.
 
 ## Project Structure
 
--   `backend/`: FastAPI server using Google ADK.
-    -   `app/main.py`: WebSocket handler, session management, and keep-alive heartbeats.
-    -   `app/biometric_agent/agent.py`: Agent definition, instructions, and tools (`report_digit`, `trigger_system_error`, `trigger_heavy_metal_mode`).
-    -   `app/patch_adk.py`: Compatibility patches for Gemini 3.1 Live API.
--   `frontend/`: React application built with Vite and Tailwind CSS.
-    -   `src/BiometricLock.jsx`: Core UI with "Neon Cyan" aesthetic and real-time feedback.
-    -   `src/useGeminiSocket.js`: Custom hook managing the multimodal WebSocket stream.
--   `mock/`: Mock audio and server for local development without API credits.
+```
+multi-functions/
+├── single-container/     # Deployment scripts and Dockerfile for the all-in-one Functions setup
+├── agents/
+│   ├── orchestrator/     # Workflow management & remote agent connections
+│   ├── researcher/       # Information gathering (Google Search)
+│   ├── judge/            # Quality control (Structured Feedback)
+│   └── content_builder/  # Content generation (Markdown)
+├── app/                  # Web application (FastAPI + Vanilla TS Frontend)
+├── shared/               # Shared utilities (Symlinked into agents)
+│   ├── a2a_utils.py      # A2A URL rewriting middleware
+│   ├── adk_app.py        # Standardized ADK FastAPI wrapper
+│   ├── authenticated_httpx.py # Service-to-service auth utilities
+│   └── logging_config.py # Centralized logging configuration
+├── Makefile              # Development and Azure deployment shortcuts
+├── run_local.sh          # Local development startup script
+├── init.sh               # Google Cloud project creation script
+├── init2.sh              # Google Cloud service enablement and .env setup
+├── set_adc.sh            # GCloud Application Default Credentials setup
+├── set_env.sh            # Local .env generation script
+└── *_test.sh             # Agent-specific testing scripts
+```
 
-## Getting Started
+## Requirements
 
-### Prerequisites
+*   **Python 3.13+**
+*   **Node.js & npm**: For frontend development and builds.
+*   **Azure CLI**: For deployment (`az login`).
+*   **Google Cloud SDK**: For authentication and Gemini API access.
+*   **Google API Key**: Required for Gemini.
 
--   Google Cloud Project with Vertex AI API enabled.
--   Gemini API Key (or Google Cloud credentials for Vertex AI).
--   Node.js (v18+) and Python (3.10+).
+### Local Service Ports
 
-### Setup
+Each service runs on a dedicated port during local development for clear isolation:
 
-1.  **Initialize Environment**:
+*   **Web App (Frontend/Backend):** [http://localhost:8000](http://localhost:8000)
+*   **Researcher Agent:** [http://localhost:8001](http://localhost:8001)
+*   **Judge Agent:** [http://localhost:8002](http://localhost:8002)
+*   **Content Builder Agent:** [http://localhost:8003](http://localhost:8003)
+*   **Orchestrator Agent:** [http://localhost:8004](http://localhost:8004)
+*   **Vite Dev Server:** [http://localhost:5173](http://localhost:5173) (Optional, for UI development)
+
+## Quick Start
+
+1.  **Initialize Environment (Google Cloud):**
     ```bash
+    # Create project and enable billing (if needed)
     ./init.sh
+    # Enable services and set up .env
+    ./init2.sh
     ```
-    Follow the prompts to configure your Project ID and API Key.
 
-2.  **Verify Infrastructure**:
+2.  **Install Dependencies:**
     ```bash
-    ./scripts/verify_setup.sh
+    # This installs root, agents, app, and frontend dependencies
+    make install
     ```
 
-3.  **Install Frontend**:
+3.  **Run Locally:**
     ```bash
-    ./frontend.sh
+    ./run_local.sh
     ```
+    This starts all agents and the web app.
 
-### Running the Application
+4.  **Access the App:**
+    -   **http://localhost:8000**: Main entry point (FastAPI serving the built frontend).
 
-1.  **Start Backend**:
-    ```bash
-    ./runadk.sh
-    ```
-    The server starts on `http://localhost:8080`.
+## Testing & Quality Assurance
 
-2.  **Start Frontend**:
-    ```bash
-    cd frontend
-    npm run dev
-    ```
-    Access the UI at `http://localhost:5173`.
+### Automated Testing
+Run agent-specific tests or the full suite:
+```bash
+# Individual agents
+./research_test.sh
+./judge_test.sh
 
-## Development & Testing
+# Full Python test suite (pytest)
+make test
 
--   **Current Status**: All tests (8/8) and linting (Ruff/ESLint) are passing.
--   **Testing**: Run `make test` to execute all backend and connectivity tests. This requires `pytest` and `anyio`.
--   **Linting**: Run `make lint` to check both Python (Ruff) and Frontend (ESLint) code standards.
--   **Mock Mode**: Run `./mock.sh` or `make mock` to start a mock backend that simulates Gemini's responses.
--   **Agent Tests**: Run `./testadk.sh` to execute automated tests against the `biometric_agent`.
--   **Model Testing**: Use `testmodels.sh` to verify model availability and connectivity.
+# Linting (ruff)
+make lint
+```
+
+### End-to-End (E2E) Testing
+Verify the entire pipeline from the API level:
+```bash
+# Test local environment
+make e2e-test
+
+# Test deployed Azure Functions
+make e2e-test-functions
+```
 
 ## Deployment
 
-Deploy to Google Cloud Run using the provided `Makefile`:
+### Microsoft Azure (Functions)
+This project is configured for deployment to **Azure Functions** as a single container running all services.
+-   **Architecture**: The `single-container/Dockerfile` builds an image that starts `app/main.py`. This single process hosts all agents (Researcher, Judge, Content Builder, Orchestrator) using ADK's multi-agent loading capability, ensuring efficient resource usage on Azure Functions.
+-   **Prerequisites**: Azure CLI installed and logged in (`az login`).
+-   **Deploy**: Use `make deploy` to:
+  1. Set up an Azure Resource Group, Storage Account, and Azure Container Registry (ACR).
+  2. Build and push the all-in-one image to ACR.
+  3. Create an App Service Plan (EP1) and deploy the Function App.
+-   **Status**: Use `make status` to check the status of your app.
+-   **Endpoint**: Use `make endpoint` to get the public URL.
+-   **Cleanup**: Use `make destroy` to delete the entire resource group.
 
-```bash
-make deploy
-```
+## Recommended Models
 
-Alternatively, use the automated Cloud Build pipeline:
-
-```bash
-gcloud builds submit --substitutions=_GOOGLE_API_KEY=YOUR_GEMINI_API_KEY
-```
-
-Ensure your environment variables are correctly configured in the Cloud Run service settings or provided as substitutions in Cloud Build.
+*   **Primary:** `gemini-2.5-flash` (Recommended) for superior reasoning and tool-calling accuracy.
+*   **Note:** Do not use models less than 2.5 as they are deprecated.

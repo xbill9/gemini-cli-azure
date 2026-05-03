@@ -1,73 +1,90 @@
 #!/bin/bash
 
-# Check if gcloud is authenticated
-if ! gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q "@"; then
-    echo "Error: No active gcloud account found."
-    echo "Please run 'gcloud auth login' and try again."
-    exit 1
-fi
+# --- Function for error handling ---
+handle_error() {
+  echo -e "\n\n*******************************************************"
+  echo "Error: $1"
+  echo "*******************************************************"
+  exit 1
+}
 
-if [ -f "$HOME/project_id.txt" ]; then
-    PROJECT_ID=$(cat "$HOME/project_id.txt")
-else
-    read -p "Enter Project ID: " PROJECT_ID
-    echo "$PROJECT_ID" > "$HOME/project_id.txt"
-fi
+# --- Part 1: Find or Create Google Cloud Project ID ---
+PROJECT_FILE="$HOME/project_id.txt"
+PROJECT_ID_SET=false
 
-if [ -f "$HOME/gemini.key" ]; then
-    GOOGLE_API_KEY=$(cat "$HOME/gemini.key")
-else
-    read -p "Enter Gemini KEY: " GOOGLE_API_KEY
-    echo "$GOOGLE_API_KEY" > "$HOME/gemini.key"
-fi
+# Check if a project ID file already exists and points to a valid project
+if [ -s "$PROJECT_FILE" ]; then
+    EXISTING_PROJECT_ID=$(cat "$PROJECT_FILE" | tr -d '[:space:]') # Read and trim whitespace
+    echo "--- Found existing project ID in $PROJECT_FILE: $EXISTING_PROJECT_ID ---"
+    echo "Verifying this project exists in Google Cloud..."
 
-gcloud config set project "$PROJECT_ID"
+    # Check if the project actually exists in GCP and we have permission to see it
+    if gcloud projects describe "$EXISTING_PROJECT_ID" --quiet >/dev/null 2>&1; then
+        echo "Project '$EXISTING_PROJECT_ID' successfully verified."
+        FINAL_PROJECT_ID=$EXISTING_PROJECT_ID
+        PROJECT_ID_SET=true
 
-# enable services
-
-gcloud services enable aiplatform.googleapis.com
-gcloud services enable cloudresourcemanager.googleapis.com
-gcloud services enable artifactregistry.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
-gcloud services enable run.googleapis.com
-gcloud services enable cloudaicompanion.googleapis.com
-
-
-cat <<EOF > .env
-GOOGLE_GENAI_USE_VERTEXAI=false
-GOOGLE_CLOUD_PROJECT=$PROJECT_ID
-GOOGLE_CLOUD_LOCATION=us-central1
-IMAGEN_MODEL="imagen-4.0-fast-generate-001"
-GENAI_MODEL="gemini-2.5-flash"
-GOOGLE_API_KEY=$GOOGLE_API_KEY
-GEMINI_API_KEY=$GOOGLE_API_KEY
-GEMINI_KEY=$GOOGLE_API_KEY
-MODEL_ID="gemini-3.1-flash-live-preview"
-SERVICE_NAME=biometric-scout
-EOF
-
-source .env
-
-if [ -z "$CLOUD_SHELL" ]; then
-    if ! gcloud auth application-default print-access-token > /dev/null 2>&1; then
-        echo "ADC expired or not found. Initializing login..."
-        gcloud auth application-default login
+        # Ensure gcloud config is set to this project for the current session
+        gcloud config set project "$FINAL_PROJECT_ID" || handle_error "Failed to set active project to '$FINAL_PROJECT_ID'."
+        echo "Set active gcloud project to '$FINAL_PROJECT_ID'."
     else
-        echo "ADC is valid."
+        echo "Warning: Project '$EXISTING_PROJECT_ID' from file does not exist or you lack permissions."
+        echo "Removing invalid reference file and proceeding with new project creation."
+        rm "$PROJECT_FILE"
     fi
 fi
 
-if [ ! -f ".requirements_installed" ]; then
-    pip install -r requirements.txt
-    touch .requirements_installed
+# If no valid existing project was found, start the interactive creation process
+if [ "$PROJECT_ID_SET" = false ]; then
+    echo "--- Creating and Setting New Google Cloud Project ID ---"
+    CODELAB_PROJECT_PREFIX="production-ready-ai"
+
+    # Dynamic Length Calculation
+    PREFIX_LEN=${#CODELAB_PROJECT_PREFIX}
+    if (( PREFIX_LEN > 25 )); then
+      handle_error "The project prefix '$CODELAB_PROJECT_PREFIX' is too long (${PREFIX_LEN} chars). Maximum is 25."
+    fi
+    MAX_SUFFIX_LEN=$(( 30 - PREFIX_LEN - 1 ))
+    echo "Project prefix '${CODELAB_PROJECT_PREFIX}' is ${PREFIX_LEN} chars. Suffix will be ${MAX_SUFFIX_LEN} chars."
+
+    # Loop until a project is successfully created.
+    while true; do
+      RANDOM_SUFFIX=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c "$MAX_SUFFIX_LEN")
+      SUGGESTED_PROJECT_ID="${CODELAB_PROJECT_PREFIX}-${RANDOM_SUFFIX}"
+
+      read -p "Enter project ID or press Enter to use default: " -e -i "$SUGGESTED_PROJECT_ID" FINAL_PROJECT_ID
+
+      if [[ -z "$FINAL_PROJECT_ID" ]]; then
+          echo "Project ID cannot be empty. Please try again."
+          continue
+      fi
+
+      echo "Attempting to create project with ID: $FINAL_PROJECT_ID"
+      ERROR_OUTPUT=$(gcloud projects create "$FINAL_PROJECT_ID" --quiet 2>&1)
+      CREATE_STATUS=$?
+
+      if [[ $CREATE_STATUS -eq 0 ]]; then
+        echo "Successfully created project: $FINAL_PROJECT_ID"
+        gcloud config set project "$FINAL_PROJECT_ID" || handle_error "Failed to set active project to $FINAL_PROJECT_ID."
+        echo "Set active gcloud project to $FINAL_PROJECT_ID."
+        echo "$FINAL_PROJECT_ID" > "$PROJECT_FILE" || handle_error "Failed to save project ID to $PROJECT_FILE."
+        echo "Successfully saved project ID to $PROJECT_FILE."
+        break
+      else
+        echo "Could not create project '$FINAL_PROJECT_ID'."
+        echo "Reason from gcloud: $ERROR_OUTPUT"
+        echo -e "This ID may be taken. Please try a different project ID.\n"
+      fi
+    done
 fi
 
-echo "Environment setup"
-cat .env
+# --- Part 2: Install Dependencies and Run Billing Setup ---
+# This part runs for both existing and newly created projects.
+echo -e "\n--- Installing Python dependencies ---"
+pip install --upgrade --user google-cloud-billing || handle_error "Failed to install Python libraries."
 
-echo "Cloud Login"
-gcloud auth list
+echo -e "\n--- Running the Billing Enablement Script ---"
+#python3 billing-enablement.py || handle_error "The billing enablement script failed. See the output above for details."
 
-echo "ADK update"
-pip install google-adk --upgrade
-adk --version
+echo -e "\n--- Full Setup Complete ---"
+exit 0
