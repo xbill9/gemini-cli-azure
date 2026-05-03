@@ -91,6 +91,7 @@ az functionapp config appsettings set \
     WEBSITES_PORT=8080 \
     WEBSITES_CONTAINER_START_TIME_LIMIT=600 \
     BYPASS_AUTH=true \
+    AGENT_NAME="orchestrator" \
     AzureFunctionsJobHost__FunctionsWorkerRuntime=python -o table
 
 echo "=== Deployment Complete ==="

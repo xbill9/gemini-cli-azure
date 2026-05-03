@@ -68,9 +68,12 @@ async def a2a_card_dispatch(
         response = await call_next(request)
         if response.status_code == 200:
             # We need to read the body, but it might be large (though agent cards are small)
-            body = b""
-            async for chunk in response.body_iterator:
-                body += chunk
+            if hasattr(response, "body_iterator"):
+                body = b""
+                async for chunk in response.body_iterator:
+                    body += chunk
+            else:
+                body = response.body
 
             import json
 

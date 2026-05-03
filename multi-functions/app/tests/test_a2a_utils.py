@@ -33,7 +33,7 @@ async def test_a2a_card_dispatch_rewrites_url():
 
     assert response.status_code == 200
     body = json.loads(response.body)
-    assert body["url"] == "https://public-agent.a.run.app"
+    assert body["url"] == "https://public-agent.a.run.app/"
 
 
 @pytest.mark.asyncio
