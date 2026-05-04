@@ -1,0 +1,5 @@
+{
+  "bedrock-agent": {
+    "BEDROCK_MODEL": "bedrock/amazon.nova-micro-v1:0"
+  }
+}
