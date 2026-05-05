@@ -1,0 +1,11 @@
+mcp
+requests
+python-dotenv
+google-adk[extensions]
+ruff
+mypy
+types-requests
+openai
+httpx
+pandas
+filelock

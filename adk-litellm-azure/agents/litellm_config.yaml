@@ -1,0 +1,13 @@
+model_list:
+  - model_name: "phi-4-mini"
+    litellm_params:
+      model: "azure_ai/phi-4-mini"
+      api_base: "os.environ/AZURE_AI_API_BASE"
+      api_key: "os.environ/AZURE_AI_API_KEY"
+      num_retries: 3
+      request_timeout: 10
+
+    router_settings:
+      model_group_alias:
+        "phi-4": "phi-4-mini"
+        "default": "phi-4-mini"

@@ -1,0 +1,7 @@
+google-adk[fastapi]
+litellm
+uvicorn
+aiosqlite
+mcp
+httpx
+pydantic
