@@ -23,6 +23,7 @@ root_agent = LlmAgent(
         api_base=azure_api_base,
         num_retries=3,
         request_timeout=30,
+        max_new_tokens=256
     ),
     name="azure_agent",
     instruction="""You are a professional cross-platform developer specializing in Microsoft Azure.
