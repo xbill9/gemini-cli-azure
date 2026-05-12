@@ -149,7 +149,7 @@ az-deploy: push-acr
 		--memory 1.5 \
 		--location $(AZ_LOCATION) \
 		--os-type Linux \
-		--environment-variables PORT=8080
+		--environment-variables PORT=8080 ALLOWED_HOSTS=*
 	@echo "Deployment complete. Endpoint: http://$$(az container show --resource-group $(AZ_RESOURCE_GROUP) --name $(AZ_CONTAINER_GROUP_NAME) --query ipAddress.fqdn -o tsv):8080"
 
 az-status:

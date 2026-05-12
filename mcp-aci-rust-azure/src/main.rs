@@ -19,10 +19,6 @@ struct GetMsgRequest {
     pub message: String,
 }
 
-/// Request structure for listing resource groups
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
-struct ListResourceGroupsRequest {}
-
 /// The main application state and handler for the MCP server
 #[derive(Clone)]
 struct HelloWorld {
@@ -47,34 +43,6 @@ impl HelloWorld {
         Parameters(GetMsgRequest { message }): Parameters<GetMsgRequest>,
     ) -> String {
         format!("Hello World MCP! {}", message)
-    }
-
-    /// Lists Azure resource groups
-    #[tool(description = "List Azure resource groups in the current subscription")]
-    async fn list_resource_groups(
-        &self,
-        _params: Parameters<ListResourceGroupsRequest>,
-    ) -> String {
-        tracing::info!("Listing Azure resource groups...");
-        match tokio::process::Command::new("az")
-            .args(["group", "list", "-o", "table"])
-            .output()
-            .await
-        {
-            Ok(output) => {
-                if output.status.success() {
-                    String::from_utf8_lossy(&output.stdout).to_string()
-                } else {
-                    let err = String::from_utf8_lossy(&output.stderr);
-                    tracing::error!("Error running az: {}", err);
-                    format!("Error running az group list: {}", err)
-                }
-            }
-            Err(e) => {
-                tracing::error!("Failed to execute az: {}", e);
-                format!("Failed to execute az: {}", e)
-            }
-        }
     }
 }
 
@@ -194,14 +162,5 @@ mod tests {
         };
         let response = hello.greeting(Parameters(request)).await;
         assert_eq!(response, "Hello World MCP! Tester");
-    }
-
-    #[tokio::test]
-    async fn test_list_resource_groups() {
-        let hello = HelloWorld::new();
-        let response = hello.list_resource_groups(Parameters(ListResourceGroupsRequest {})).await;
-        // Since we don't know if 'az' is logged in or even installed in the test env,
-        // we just check if it returns a String.
-        assert!(!response.is_empty());
     }
 }
