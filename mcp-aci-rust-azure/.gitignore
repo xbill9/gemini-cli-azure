@@ -1,0 +1,17 @@
+# Rust
+target/
+
+# Logs
+server.log
+
+# PID files
+server.pid
+
+# Environment variables
+.env
+
+# Azure / K8s
+# k8s.yaml is used as a template in this project
+k8s.yaml
+!k8s.yaml
+

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "mcp-aci-rust-azure": {
+      "httpUrl": "http://mcp-container-penguin.westus2.azurecontainer.io/mcp"
+    },
+    "local-rust": {
+      "httpUrl": "http://127.0.0.1:8080/mcp"
+    }
+  }
+}
