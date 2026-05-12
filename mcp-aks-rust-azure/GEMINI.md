@@ -33,12 +33,18 @@ Follow Rust best practices and idiomatic patterns (2024 edition).
 - `make logs`: Tail logs for the AKS pods.
 
 ### Implementation Details
-
+- **Implementation Details:**
 - **Entry Point:** `src/main.rs` defines the `HelloWorld` struct which implements `ServerHandler`.
 - **Streaming HTTP:** The server uses `StreamableHttpService` from `rmcp` to handle long-lived HTTP connections for MCP sessions.
 - **Health Check:** A `/health` endpoint is provided for Kubernetes health probes.
-- **Environment Variables:** `PORT` determines the listening port. `ALLOWED_HOSTS` configures DNS rebinding protection.
+- **Environment Variables:** `PORT` determines the listening port. `ALLOWED_HOSTS` configures DNS rebinding protection (defaults to `*` in `k8s.yaml`).
 - **Graceful Shutdown:** Implemented using `tokio::signal`.
+
+## Implemented Tools
+
+- **`greeting`**: Echoes back a provided message.
+  - Parameters: `message` (string).
+  - Returns: A greeting string.
 
 ## Documentation References
 

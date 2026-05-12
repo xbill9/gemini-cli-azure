@@ -14,6 +14,22 @@ This project implements an MCP server that provides tools to LLM agents. It is b
 - **Dockerized**: Ready for containerized deployment.
 - **Health Checks**: Built-in `/health` endpoint for Kubernetes probes.
 
+## Tools
+
+This MCP server provides the following tools:
+
+- **`greeting`**: A simple tool that echoes back a message.
+  - **Parameters**:
+    - `message` (string): The message to echo.
+  - **Returns**: A string containing the greeting and the original message.
+
+## Configuration
+
+The server can be configured using the following environment variables:
+
+- `PORT`: The port the server will listen on (default: `8080`).
+- `ALLOWED_HOSTS`: A comma-separated list of allowed hostnames for DNS rebinding protection. Set to `*` to disable this check (default: `*` in AKS deployment).
+
 ## Prerequisites
 
 - [Rust](https://www.rust-lang.org/tools/install) (latest stable)
