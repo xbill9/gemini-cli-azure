@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "mcp-aks-rust-azure": {
+      "httpUrl": "http://4.149.219.223/mcp"
+    },
+    "local-rust": {
+      "httpUrl": "http://127.0.0.1:8080/mcp"
+    }
+  }
+}
