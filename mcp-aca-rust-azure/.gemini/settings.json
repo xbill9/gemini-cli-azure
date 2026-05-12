@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "mcp-aca-rust-azure": {
+      "httpUrl": "https://mcp-app-penguin.ashyglacier-2d153885.westus2.azurecontainerapps.io/mcp"
+    },
+    "local-rust": {
+      "httpUrl": "http://127.0.0.1:8080/mcp"
+    }
+  }
+}
