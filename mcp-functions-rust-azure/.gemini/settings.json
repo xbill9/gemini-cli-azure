@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "mcp-functions-rust-azure": {
+      "httpUrl": "https://mcp-func-penguin.azurewebsites.net/api/mcp"
+    },
+    "local-rust": {
+      "httpUrl": "http://127.0.0.1:8080/mcp"
+    }
+  }
+}

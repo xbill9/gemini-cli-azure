@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "customHandler": {
+    "description": {
+      "defaultExecutablePath": "mcp-functions-rust-azure",
+      "workingDirectory": "/home/site/wwwroot",
+      "arguments": []
+    },
+    "enableForwardingHttpRequest": true
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": ""
+    }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)"
+  },
+  "logging": {
+    "logLevel": {
+      "default": "Information"
+    }
+  }
+}
