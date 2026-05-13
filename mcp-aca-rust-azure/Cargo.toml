@@ -1,5 +1,5 @@
 [package]
-name = "mcp-aci-rust-azure"
+name = "mcp-aca-rust-azure"
 version = "1.0.0"
 edition = "2024"
 description = "Hello World streaming http MCP"

@@ -45,10 +45,20 @@ The application can be configured via environment variables:
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `PORT` | The port the server listens on. | `8080` |
-| `ALLOWED_HOSTS` | Comma-separated list of allowed hostnames/IPs for DNS rebinding protection. Use `*` to disable (default behavior if unset). | `0.0.0.0,localhost,127.0.0.1` |
+| `ALLOWED_HOSTS` | Comma-separated list of allowed hostnames/IPs for DNS rebinding protection. Use `*` to disable (default behavior if unset). | `*` (Disabled) |
 | `RUST_LOG` | Logging filter level. | `info,mcp_aca_rust_azure=debug,rmcp=debug` |
 
-### Deployment to ACA
+## Available Tools
+
+The server exposes the following MCP tools:
+
+### `greeting`
+- **Description**: Hello World via Model Context Protocol. Echoes back a provided message.
+- **Parameters**:
+  - `message` (string, required): The message to echo back.
+
+## Deployment to ACA
+
 
 To deploy the application to Azure ACA:
 

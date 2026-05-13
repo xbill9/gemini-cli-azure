@@ -14,9 +14,15 @@ ACR_LOGIN_SERVER := $(AZ_ACR_NAME).azurecr.io
 FULL_IMAGE_NAME := $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)
 
 # Project Variables
-SERVICE_NAME := mcp-aci-rust-azure
+SERVICE_NAME := mcp-aca-rust-azure
 
-.PHONY: all build run clean release test fmt clippy lint check docker-build deploy status git-status local-status aca-status endpoint push-acr az-login acr-create acr-login aca-logs aca-destroy destroy logs start stop help aca-env-create aca-deploy
+.PHONY: all build run clean release test fmt clippy lint check docker-build deploy status git-status local-status aca-status endpoint push-acr az-login acr-create acr-login aca-logs aca-destroy destroy logs start stop help aca-env-create aca-deploy check-requirements
+
+# Check for required tools
+check-requirements:
+	@command -v az >/dev/null 2>&1 || { echo >&2 "Azure CLI (az) is required but not installed. Aborting."; exit 1; }
+	@command -v docker >/dev/null 2>&1 || { echo >&2 "Docker is required but not installed. Aborting."; exit 1; }
+	@echo "All requirements met."
 
 # The default target
 all: build
@@ -129,7 +135,7 @@ push-acr: docker-build acr-create acr-login
 
 # --- Azure Container Apps (ACA) Deployment ---
 
-deploy: aca-deploy
+deploy: check-requirements aca-deploy
 
 aca-env-create: acr-create
 	@echo "Checking if ACA Environment $(AZ_ACA_ENV_NAME) exists..."
@@ -200,6 +206,7 @@ help:
 	@echo "    test             Run tests"
 	@echo "    fmt              Format code"
 	@echo "    clippy           Lint the code"
+	@echo "    check-requirements Check if az and docker are installed"
 	@echo "    docker-build     Build the Docker image"
 	@echo "    deploy           Push to ACR and deploy to ACA"
 	@echo "    aca-status       Check ACA status"
