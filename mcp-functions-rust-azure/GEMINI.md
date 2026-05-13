@@ -11,33 +11,53 @@ Follow Rust best practices and idiomatic patterns (2024 edition).
 
 *   **Language:** Rust (2024 Edition)
 *   **MCP Framework:** [`rmcp`](https://github.com/modelcontextprotocol/rust-sdk) (v1.6.0)
+    *   Uses `#[tool_router]`, `#[tool]`, and `#[tool_handler]` macros for ergonomic tool definition.
 *   **Web Framework:** [Axum](https://docs.rs/axum/latest/axum/) (v0.8.9)
-*   **Containerization:** Docker
+    *   Handles routing, health checks, and middleware.
+*   **Runtime:** [Tokio](https://tokio.rs/) (v1.52.1)
+    *   Multi-threaded asynchronous runtime.
 *   **Deployment:** Azure Functions (Custom Handler on Linux Container)
+    *   Requests are proxied from Azure Functions to the Rust server.
 
 ## Development Workflow
 
 ### Useful Commands
 
-- `make run`: Starts the server locally on port 8080.
 - `make build`: Compiles the project for development.
+- `make run`: Starts the server locally in the foreground.
+- `make start`: Builds and starts the server in the background (logs to `server.log`, PID in `server.pid`).
+- `make stop`: Stops the background server.
+- `make status`: Checks status of both local background process and Azure Function App.
 - `make test`: Runs unit tests in `src/main.rs`.
-- `make clippy`: Runs linting.
+- `make clippy`: Runs linting (must be clean for release).
 - `make fmt`: Formats the code.
-- `make start`/`stop`/`status`: Manage background server process.
-- `make deploy`: Deploys to Azure Function App.
-- `make functionapp-status`: Check Function App status and get the endpoint.
-- `make functionapp-logs`: Tail logs for the Function App.
-- `make functionapp-destroy`: Delete the Function App and Plan.
+- `make deploy`: Full automation to build and deploy to Azure.
+- `make endpoint`: Prints the deployed MCP endpoint URL.
+- `make functionapp-logs`: Tail logs for the Function App in Azure.
+- `make destroy`: Teardown all Azure resources.
 
 ### Implementation Details
-- **Entry Point:** `src/main.rs` defines the `HelloWorld` struct which implements `ServerHandler`.
-- **Azure Functions Custom Handler:** The server listens on `FUNCTIONS_CUSTOMHANDLER_PORT` (proxied by Azure Functions).
-- **Streaming HTTP:** The server uses `StreamableHttpService` from `rmcp` to handle long-lived HTTP connections for MCP sessions.
-- **Session Management:** Configured with a 1-hour session timeout (`LocalSessionManager`) and 15-second SSE keep-alive.
-- **Health Check:** A `/health` endpoint is provided for Azure health probes.
-- **Environment Variables:** `FUNCTIONS_CUSTOMHANDLER_PORT` (or `PORT`) determines the listening port. `ALLOWED_HOSTS` configures DNS rebinding protection (defaults to `*`).
-- **Graceful Shutdown:** Implemented using `tokio::signal`.
+
+- **Entry Point:** `src/main.rs` contains the `main` function and the `HelloWorld` struct.
+- **`HelloWorld` Struct:**
+  - Implements `ServerHandler` via `#[tool_handler]`.
+  - Defines tools via `#[tool_router]` and `#[tool]`.
+- **Azure Functions Custom Handler:**
+  - Listens on `FUNCTIONS_CUSTOMHANDLER_PORT` (proxied by Azure).
+  - Falls back to `PORT` if the former is not set.
+- **Streaming HTTP:**
+  - Uses `StreamableHttpService` from `rmcp`.
+  - SSE keep-alive is set to 15 seconds.
+- **Session Management:**
+  - `LocalSessionManager` is used with a 1-hour session timeout.
+- **Routing:**
+  - `/health`: Top-level health check.
+  - `/api/mcp/health`: Nested health check under the MCP route.
+  - `/api/mcp/{*remainder}`: Forwarded to the MCP service.
+- **DNS Rebinding Protection:**
+  - `ALLOWED_HOSTS` env var configures the check.
+  - Defaults to `0.0.0.0`, `localhost`, `127.0.0.1`.
+  - Set `ALLOWED_HOSTS=*` to disable host validation (useful in some container environments).
 
 ## Implemented Tools
 
@@ -45,17 +65,12 @@ Follow Rust best practices and idiomatic patterns (2024 edition).
   - Parameters: `message` (string).
   - Returns: A greeting string.
 
-## Documentation References
-
-- [rmcp Documentation](https://docs.rs/rmcp/latest/rmcp/)
-- [Axum Documentation](https://docs.rs/axum/latest/axum/)
-- [Model Context Protocol Specification](https://modelcontextprotocol.io/)
-- [Azure Functions Custom Handlers](https://learn.microsoft.com/en-us/azure/azure-functions/functions-custom-handlers)
-
 ## Tips for Gemini
 
-- **Adding Tools:** Use the `#[tool]` attribute in the `HelloWorld` impl block. Ensure the `tool_router` is correctly initialized in `new()`.
-- **Tool Parameters:** Ensure all parameter structs implement `serde::Deserialize` and `schemars::JsonSchema`.
-- **Local Sessions:** The `LocalSessionManager` handles MCP session state locally.
-- **Tracing:** Use `tracing` for logging. The subscriber is initialized in `main`.
-- **Routing:** All requests to `/api/mcp/{*remainder}` are forwarded to the Rust server.
+- **Adding Tools:**
+  1. Define a request struct with `#[derive(serde::Deserialize, schemars::JsonSchema)]`.
+  2. Add an `async` method to the `HelloWorld` block with the `#[tool]` attribute.
+  3. Ensure parameters use the `Parameters<T>` wrapper.
+- **Tracing:** Use `tracing` macros (`info!`, `debug!`, `error!`) for logging. The subscriber is initialized in `main`.
+- **Testing:** Add new test cases to the `mod tests` block at the bottom of `src/main.rs`.
+- **Azure Configuration:** Environment variables like `ALLOWED_HOSTS` are set during `make deploy` via `az functionapp config appsettings set`.

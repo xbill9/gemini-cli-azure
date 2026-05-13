@@ -10,6 +10,8 @@ A streaming HTTP Model Context Protocol (MCP) server written in Rust, optimized 
 *   **Azure Functions Integration:** Designed as a Custom Handler, allowing you to run a full Axum web server on Azure Functions.
 *   **Containerized:** Dockerized for consistent deployment across environments.
 *   **Managed Identity:** Securely pulls images from Azure Container Registry (ACR) using Managed Identity.
+*   **Graceful Shutdown:** Implements SIGINT and SIGTERM handling for clean exits.
+*   **DNS Rebinding Protection:** Configurable host validation via `ALLOWED_HOSTS`.
 
 ## Getting Started
 
@@ -33,15 +35,23 @@ A streaming HTTP Model Context Protocol (MCP) server written in Rust, optimized 
     make build
     make run
     ```
-    The server will start on `http://localhost:8080`.
+    The server will start on `http://localhost:8080` (or `PORT` environment variable).
 
-3.  **Test the health endpoint:**
+3.  **Background Management:**
     ```bash
-    curl http://localhost:8080/health
+    make start   # Build and start server in background
+    make status  # Check status of local and Azure deployments
+    make stop    # Stop the background server
     ```
 
-4.  **Test the greeting tool (Local):**
-    MCP clients (like Claude Desktop or Gemini CLI) can connect to the server using SSE.
+4.  **Test the health endpoints:**
+    ```bash
+    curl http://localhost:8080/health
+    curl http://localhost:8080/api/mcp/health
+    ```
+
+5.  **Test the greeting tool (Local):**
+    MCP clients (like Claude Desktop or Gemini CLI) can connect to the server using SSE at `http://localhost:8080/api/mcp`.
 
 ### Deployment to Azure
 
@@ -54,18 +64,22 @@ A streaming HTTP Model Context Protocol (MCP) server written in Rust, optimized 
     ```bash
     make deploy
     ```
-    This command will:
-    *   Create a Resource Group.
-    *   Create an Azure Container Registry (ACR).
-    *   Build and push the Docker image to ACR.
-    *   Create a Storage Account (required for Functions).
-    *   Create an App Service Plan (Linux).
-    *   Create and configure the Azure Function App.
-    *   Set up Managed Identity for ACR access.
+    This command automates:
+    *   Resource Group creation (`mcp-rg-westus2`).
+    *   Azure Container Registry (ACR) setup.
+    *   Docker build, tag, and push to ACR.
+    *   Storage Account and App Service Plan (Linux B1) creation.
+    *   Azure Function App creation with Custom Handler configuration.
+    *   Managed Identity setup for ACR `AcrPull` permissions.
 
 3.  **Get the endpoint:**
     ```bash
     make endpoint
+    ```
+
+4.  **Logs and Monitoring:**
+    ```bash
+    make functionapp-logs # Tail live logs
     ```
 
 ## Project Structure
@@ -74,7 +88,7 @@ A streaming HTTP Model Context Protocol (MCP) server written in Rust, optimized 
 *   `host.json`: Azure Functions configuration for the Custom Handler.
 *   `mcp/function.json`: Defines the HTTP trigger and routing for the MCP server.
 *   `Dockerfile`: Multi-stage build for a minimal deployment container.
-*   `Makefile`: Automation for build, test, and deployment.
+*   `Makefile`: Comprehensive automation for build, test, and deployment.
 
 ## Implemented Tools
 
@@ -85,8 +99,9 @@ A simple tool that echoes back a message.
 
 ## Configuration
 
-*   `FUNCTIONS_CUSTOMHANDLER_PORT`: The port the server listens on (provided by Azure Functions).
-*   `ALLOWED_HOSTS`: Comma-separated list of allowed hostnames for DNS rebinding protection (default: `*`).
+*   `FUNCTIONS_CUSTOMHANDLER_PORT` / `PORT`: The port the server listens on.
+*   `ALLOWED_HOSTS`: Comma-separated list of allowed hostnames (default: `localhost,127.0.0.1,0.0.0.0`). Set to `*` to disable checks.
+*   `RUST_LOG`: Logging level (e.g., `info`, `debug`).
 
 ## License
 
