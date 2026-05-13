@@ -60,7 +60,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info,mcp_aks_rust_azure=debug,rmcp=debug".into()),
+                .unwrap_or_else(|_| "info,mcp_appservice_rust_azure=debug,rmcp=debug".into()),
         )
         .with(
             tracing_subscriber::fmt::layer()

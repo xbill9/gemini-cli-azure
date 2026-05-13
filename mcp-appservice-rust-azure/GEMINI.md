@@ -33,6 +33,7 @@ Follow Rust best practices and idiomatic patterns (2024 edition).
 ### Implementation Details
 - **Entry Point:** `src/main.rs` defines the `HelloWorld` struct which implements `ServerHandler`.
 - **Streaming HTTP:** The server uses `StreamableHttpService` from `rmcp` to handle long-lived HTTP connections for MCP sessions.
+- **Session Management:** Configured with a 1-hour session timeout (`LocalSessionManager`) and 15-second SSE keep-alive.
 - **Health Check:** A `/health` endpoint is provided for Azure health probes.
 - **Environment Variables:** `PORT` determines the listening port (Configured to 8080 on App Service). `ALLOWED_HOSTS` configures DNS rebinding protection (defaults to `*`).
 - **Graceful Shutdown:** Implemented using `tokio::signal`.

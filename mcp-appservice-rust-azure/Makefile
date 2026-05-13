@@ -145,9 +145,11 @@ appservice-create: acr-create
 	@PRINCIPAL_ID=$$(az webapp show --name $(AZ_APP_SERVICE_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query identity.principalId -o tsv); \
 	ACR_ID=$$(az acr show --name $(AZ_ACR_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query id -o tsv); \
 	az role assignment create --assignee $$PRINCIPAL_ID --scope $$ACR_ID --role AcrPull > /dev/null 2>&1 || true
-	@az webapp config set --resource-group $(AZ_RESOURCE_GROUP) --name $(AZ_APP_SERVICE_NAME) --generic-configurations '{"acrUseManagedIdentityCreds": true}'
+	@az webapp config set --resource-group $(AZ_RESOURCE_GROUP) --name $(AZ_APP_SERVICE_NAME) --generic-configurations '{"acrUseManagedIdentityCreds": true}' --always-on true
+	@echo "Enabling HTTP logging..."
+	@az webapp log config --name $(AZ_APP_SERVICE_NAME) --resource-group $(AZ_RESOURCE_GROUP) --web-server-logging filesystem
 	@echo "Setting App Service environment variables..."
-	@az webapp config appsettings set --resource-group $(AZ_RESOURCE_GROUP) --name $(AZ_APP_SERVICE_NAME) --settings PORT=8080 ALLOWED_HOSTS=* WEBSITES_PORT=8080
+	@az webapp config appsettings set --resource-group $(AZ_RESOURCE_GROUP) --name $(AZ_APP_SERVICE_NAME) --settings PORT=8080 ALLOWED_HOSTS=* WEBSITES_PORT=8080 WEBSITE_HTTPLOGGING_RETENTION_DAYS=7
 
 appservice-deploy: push-acr appservice-create
 	@echo "Updating App Service with image $(FULL_IMAGE_NAME)..."
@@ -157,6 +159,9 @@ appservice-deploy: push-acr appservice-create
 appservice-status:
 	@echo "Checking App Service status for $(AZ_APP_SERVICE_NAME)..."
 	@az webapp show --name $(AZ_APP_SERVICE_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query "{Name:name, State:state, HostNames:enabledHostNames[0]}" --output table 2>/dev/null || echo "App Service $(AZ_APP_SERVICE_NAME) not found."
+
+endpoint:
+	@az webapp show --name $(AZ_APP_SERVICE_NAME) --resource-group $(AZ_RESOURCE_GROUP) --query "enabledHostNames[0]" --output tsv 2>/dev/null | awk '{print "https://" $$1}' || echo "App Service $(AZ_APP_SERVICE_NAME) not found."
 
 appservice-logs:
 	@echo "Tailing logs for App Service $(AZ_APP_SERVICE_NAME)..."

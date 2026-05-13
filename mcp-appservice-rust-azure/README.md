@@ -99,6 +99,7 @@ make appservice-logs
 - `make deploy`: Full deployment pipeline to Azure App Service.
 - `make appservice-status`: Displays the status and URL of the service.
 - `make appservice-logs`: Follows the logs of the running app.
+- `make appservice-destroy`: Deletes the App Service and Plan.
 - `make destroy`: Deletes the resource group and all associated resources.
 
 ## License
